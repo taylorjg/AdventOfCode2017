@@ -1,3 +1,4 @@
 {
-    "haskell.ghcMod.executablePath": "/Users/jontaylor/Library/Haskell/bin/ghc-mod"
+    "haskell.ghcMod.executablePath": "/Users/jontaylor/Library/Haskell/bin/ghc-mod",
+    "haskell.hlint.executablePath": "/Users/jontaylor/Library/Haskell/bin/hlint"
 }

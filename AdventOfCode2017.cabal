@@ -10,7 +10,7 @@ cabal-version:       >=1.10
 
 library
   default-language:    Haskell2010
-  build-depends:       base >=4.9 && <4.10
+  build-depends:       base >=4.9 && <4.10, containers
   hs-source-dirs:      Day01/lib, Day02/lib, Day03/lib
   Exposed-modules:     Day01, Day02, Day03
 
