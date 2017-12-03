@@ -8,20 +8,47 @@ category:            Fun
 build-type:          Simple
 cabal-version:       >=1.10
 
+library
+  default-language:    Haskell2010
+  build-depends:       base >=4.9 && <4.10
+  hs-source-dirs:      Day01/lib, Day02/lib, Day03/lib
+  Exposed-modules:     Day01, Day02, Day03
+
 executable Day01
   main-is:             Main.hs
-  build-depends:       base >=4.9 && <4.10
-  hs-source-dirs:      Day01
+  build-depends:       base >=4.9 && <4.10, AdventOfCode2017
+  hs-source-dirs:      Day01/src
   default-language:    Haskell2010
+
+test-suite Day01Tests
+  type:                exitcode-stdio-1.0
+  default-language:    Haskell2010
+  build-depends:       base >=4.9 && <4.10, AdventOfCode2017, hspec
+  hs-source-dirs:      Day01/test
+  main-is:             Spec.hs
 
 executable Day02
   main-is:             Main.hs
-  build-depends:       base >=4.9 && <4.10
-  hs-source-dirs:      Day02
+  build-depends:       base >=4.9 && <4.10, AdventOfCode2017
+  hs-source-dirs:      Day02/src
   default-language:    Haskell2010
+
+test-suite Day02Tests
+  type:                exitcode-stdio-1.0
+  default-language:    Haskell2010
+  build-depends:       base >=4.9 && <4.10, AdventOfCode2017, hspec
+  hs-source-dirs:      Day02/test
+  main-is:             Spec.hs
 
 executable Day03
   main-is:             Main.hs
-  build-depends:       base >=4.9 && <4.10
-  hs-source-dirs:      Day03
+  build-depends:       base >=4.9 && <4.10, AdventOfCode2017
+  hs-source-dirs:      Day03/src
   default-language:    Haskell2010
+
+test-suite Day03Tests
+  type:                exitcode-stdio-1.0
+  default-language:    Haskell2010
+  build-depends:       base >=4.9 && <4.10, AdventOfCode2017, hspec
+  hs-source-dirs:      Day03/test
+  main-is:             Spec.hs
