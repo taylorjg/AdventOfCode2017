@@ -1,4 +1,6 @@
-import Day03
+import           Day03 (spiralDistance)
 
 main :: IO ()
-main = putStrLn "Hello Day03"
+main = do
+    let answer1 = spiralDistance 289326
+    putStrLn $ "answer1: " ++ show answer1
