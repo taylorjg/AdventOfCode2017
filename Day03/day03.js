@@ -9,9 +9,9 @@ const xoffset = (len, i) => {
     const r = i % len;    
     switch (q) {
         case 0: return 0;
-        case 1: return -(r + 1);
-        case 2: return -len;
-        case 3: return -(len - r - 1);
+        case 1: return r + 1;
+        case 2: return len;
+        case 3: return len - r - 1;
     }
 };
 
@@ -38,7 +38,7 @@ const calcCoords = n => {
     const len = outerSquareSize - 1;
     const i = n - (innerSquareSize * innerSquareSize) - 1;
     return [
-        len / 2 + xoffset(len, i),
+        len / 2 - xoffset(len, i),
         -len / 2 + yoffset(len, i)
     ];
 };
