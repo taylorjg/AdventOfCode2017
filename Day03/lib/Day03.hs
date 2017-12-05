@@ -1,6 +1,12 @@
 module Day03 (spiralDistance, firstValueWrittenBiggerThan) where
 
-data Coords = Coords { x :: Int, y :: Int }
+import           Data.Map   (Map)
+import qualified Data.Map   as Map
+import           Data.Maybe (mapMaybe)
+
+data Coords = Coords { x :: Int, y :: Int } deriving (Eq, Ord)
+
+-- Part 1
 
 spiralDistance :: Int -> Int
 spiralDistance n =
@@ -61,11 +67,34 @@ yoffset len i = case q of
 manhattanDistance :: Coords -> Int
 manhattanDistance coords = abs (x coords) + abs (y coords)
 
--- 147  142  133  122   59
--- 304    5    4    2   57
--- 330   10    1    1   54
--- 351   11   23   25   26
--- 362  747  806--->   ...
+-- Part 2
 
 firstValueWrittenBiggerThan :: Int -> Int
-firstValueWrittenBiggerThan n = 0
+firstValueWrittenBiggerThan =
+  loop initialTotalsMap 2
+  where
+    initialTotalsMap = Map.singleton 1 1
+
+loop :: Map Int Int -> Int -> Int -> Int
+loop totalsMap n threshold =
+  case total of
+    _ | total > threshold -> total
+    _ -> loop totalsMap' n' threshold
+  where
+    coords = calcCoords n
+    coordsMap = Map.fromList $ take n coordsToSquares
+    neighbours = findNeighbours coords coordsMap
+    values = mapMaybe (`Map.lookup` totalsMap) neighbours
+    total = sum values
+    totalsMap' = Map.insert n total totalsMap
+    n' = succ n
+
+findNeighbours :: Coords -> Map Coords Int -> [Int]
+findNeighbours (Coords x y) coordsMap =
+  mapMaybe (`Map.lookup` coordsMap) neighbourCoords
+  where
+    deltas = [(dx, dy) | dx <- [-1, 0, 1], dy <- [-1, 0, 1], dx /= 0 || dy /= 0 ]
+    neighbourCoords = map (\(dx, dy) -> Coords (x + dx) (y + dy)) deltas
+
+coordsToSquares :: [(Coords, Int)]
+coordsToSquares = (Coords 0 0, 1) : map (\n -> (calcCoords n, n)) [2..]
