@@ -73,9 +73,9 @@ firstValueWrittenBiggerThan :: Int -> Int
 firstValueWrittenBiggerThan =
   loop initialTotalsMap 2
   where
-    initialTotalsMap = Map.singleton 1 1
+    initialTotalsMap = Map.singleton (Coords 0 0) 1
 
-loop :: Map Int Int -> Int -> Int -> Int
+loop :: Map Coords Int -> Int -> Int -> Int
 loop totalsMap n threshold =
   case total of
     _ | total > threshold -> total
@@ -83,15 +83,15 @@ loop totalsMap n threshold =
   where
     coords = calcCoords n
     coordsMap = Map.fromList $ take n coordsToSquares
-    neighbours = findNeighbours coords coordsMap
-    values = mapMaybe (`Map.lookup` totalsMap) neighbours
-    total = sum values
-    totalsMap' = Map.insert n total totalsMap
+    neighbourCoords = findNeighbourCoords coords coordsMap
+    neighbourValues = mapMaybe (`Map.lookup` totalsMap) neighbourCoords
+    total = sum neighbourValues
+    totalsMap' = Map.insert coords total totalsMap
     n' = succ n
 
-findNeighbours :: Coords -> Map Coords Int -> [Int]
-findNeighbours (Coords x y) coordsMap =
-  mapMaybe (`Map.lookup` coordsMap) neighbourCoords
+findNeighbourCoords :: Coords -> Map Coords Int -> [Coords]
+findNeighbourCoords (Coords x y) coordsMap =
+  neighbourCoords
   where
     deltas = [(dx, dy) | dx <- [-1, 0, 1], dy <- [-1, 0, 1], dx /= 0 || dy /= 0 ]
     neighbourCoords = map (\(dx, dy) -> Coords (x + dx) (y + dy)) deltas
