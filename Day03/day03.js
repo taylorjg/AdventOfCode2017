@@ -24,7 +24,7 @@ const yop = (len, i) => {
     }
 };
 
-const dumpCoords = side => {
+const calcCoordsForSize = side => {
     const len = side - 1;
     const n = len / 2;
     const numSteps = (side * side) - ((side - 2) * (side - 2));
@@ -37,6 +37,7 @@ const dumpCoords = side => {
         coords.push([x, y]);
     }
     console.log(JSON.stringify(coords));
+    return coords;
 };
 
 // --------------------------------------------------------------------------------
@@ -56,7 +57,7 @@ const expected3x3 = [
     [1, -1], // 9
 ];
 
-dumpCoords(3);
+calcCoordsForSize(3);
 console.log(JSON.stringify(expected3x3));
 
 // --------------------------------------------------------------------------------
@@ -86,7 +87,7 @@ const expected5x5 = [
     [2, -2]  // 25
 ];
 
-dumpCoords(5);
+calcCoordsForSize(5);
 console.log(JSON.stringify(expected5x5));
 
 // --------------------------------------------------------------------------------
@@ -126,11 +127,16 @@ const expected7x7 = [
     [3, -3]  // 49
 ];
 
-dumpCoords(7);
+calcCoordsForSize(7);
 console.log(JSON.stringify(expected7x7));
 
 // --------------------------------------------------------------------------------
 
-dumpCoords(9);
-dumpCoords(11);
-dumpCoords(13);
+const n = 289326;
+const sq0 = Math.ceil(Math.sqrt(n));
+const sq1 = sq0 % 2 === 1 ? sq0 : sq0 + 1;
+const sq2 = sq1 - 2;
+const coords = calcCoordsForSize(sq1);
+const index = n - (sq2 * sq2) - 1;
+const answer = coords[index];
+console.log(`n: ${n}; sq1: ${sq1}; sq2: ${sq2}; index: ${index}; answer: ${JSON.stringify(answer)}`);
