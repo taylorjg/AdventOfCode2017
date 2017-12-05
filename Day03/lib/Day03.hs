@@ -1,4 +1,4 @@
-module Day03 (spiralDistance) where
+module Day03 (spiralDistance, firstValueWrittenBiggerThan) where
 
 data Coords = Coords { x :: Int, y :: Int }
 
@@ -60,3 +60,12 @@ yoffset len i = case q of
 
 manhattanDistance :: Coords -> Int
 manhattanDistance coords = abs (x coords) + abs (y coords)
+
+-- 147  142  133  122   59
+-- 304    5    4    2   57
+-- 330   10    1    1   54
+-- 351   11   23   25   26
+-- 362  747  806--->   ...
+
+firstValueWrittenBiggerThan :: Int -> Int
+firstValueWrittenBiggerThan n = 0
