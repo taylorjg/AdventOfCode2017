@@ -11,19 +11,24 @@ spiralDistance n =
 calcCoords :: Int -> Coords
 calcCoords n = Coords x y
   where
-    x = len `quot` 2 - xoffset len i
-    y = -len `quot` 2 + yoffset len i
+    x = halfLen - xoffset len i
+    y = -halfLen + yoffset len i
     sq = ceiling . sqrt . fromIntegral $ n
     outerSquareSize = if odd sq then sq else sq + 1
     innerSquareSize = outerSquareSize - 2
     len = outerSquareSize - 1
+    halfLen = len `quot` 2
     i = n - (innerSquareSize * innerSquareSize) - 1
 
--- 17  16  15  14  13
--- 18              12
--- 19              11
--- 20              10
--- 21  22  23  24  25
+--         5   4   3
+--         6       2
+--         7   8   9 <-- relative to here (1, -1)
+
+--     17  16  15  14  13
+--     18              12
+--     19              11
+--     20              10
+--     21  22  23  24  25 <-- relative to here (2, -2)
 
 -- 37  36  35  34  33  32  31
 -- 38                      30
@@ -31,7 +36,7 @@ calcCoords n = Coords x y
 -- 40                      28
 -- 41                      27
 -- 42                      26
--- 43  44  45  46  47  48  49
+-- 43  44  45  46  47  48  49 <-- relative to here (3, -3)
 
 xoffset :: Int -> Int -> Int
 xoffset len i = case q of
