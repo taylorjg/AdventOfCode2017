@@ -11,12 +11,12 @@ escapeMaze jumps =
 
 loop :: Map Int Int -> Int -> Int -> Int
 loop m curr steps =
-  case curr' of
-    _ | curr' < 0 || curr' >= Map.size m -> steps'
-    _ -> loop m' curr' steps'
-  where
-    jump = m Map.! curr
-    jump' = succ jump
-    curr' = curr + jump
-    steps' = succ steps
-    m' = Map.insert curr jump' m
+  case Map.lookup curr m of
+    Nothing -> steps
+    Just jump ->
+      loop m' curr' steps'
+      where
+        curr' = curr + jump
+        jump' = succ jump
+        steps' = succ steps
+        m' = Map.insert curr jump' m
