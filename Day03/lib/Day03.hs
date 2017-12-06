@@ -81,20 +81,16 @@ loop totalsMap n threshold =
     _ | total > threshold -> total
     _ -> loop totalsMap' n' threshold
   where
-    coords = calcCoords n
-    coordsMap = Map.fromList $ take n coordsToSquares
-    neighbourCoords = findNeighbourCoords coords coordsMap
+    currentCoords = calcCoords n
+    neighbourCoords = generateNeighbourCoords currentCoords
     neighbourValues = mapMaybe (`Map.lookup` totalsMap) neighbourCoords
     total = sum neighbourValues
-    totalsMap' = Map.insert coords total totalsMap
+    totalsMap' = Map.insert currentCoords total totalsMap
     n' = succ n
 
-findNeighbourCoords :: Coords -> Map Coords Int -> [Coords]
-findNeighbourCoords (Coords x y) coordsMap =
-  neighbourCoords
+generateNeighbourCoords :: Coords -> [Coords]
+generateNeighbourCoords (Coords x y) = neighbourCoords
   where
     deltas = [(dx, dy) | dx <- [-1, 0, 1], dy <- [-1, 0, 1], dx /= 0 || dy /= 0 ]
-    neighbourCoords = map (\(dx, dy) -> Coords (x + dx) (y + dy)) deltas
-
-coordsToSquares :: [(Coords, Int)]
-coordsToSquares = (Coords 0 0, 1) : map (\n -> (calcCoords n, n)) [2..]
+    neighbourCoords = map addDelta deltas
+    addDelta (dx, dy) = Coords (x + dx) (y + dy)
