@@ -10,16 +10,9 @@ numRedistributions1 banks =
   where
     fn bankss next = next `elem` bankss
 
--- Out of curiosity, the debugger would also like to know the size of the loop:
--- starting from a state that has already been seen, how many block redistribution
--- cycles must be performed before that same state is seen again?
-
--- In the example above, 2 4 1 2 is seen again after four cycles, and so the answer
--- in that example would be 4.
-
-numRedistributions2 :: [Int] -> (Int, [Int])
+numRedistributions2 :: [Int] -> Int
 numRedistributions2 banks =
-  loop [answer1] 0 fn2
+  fst $ loop [answer1] 0 fn2
   where
     answer1 = snd $ loop [banks] 0 fn1
     fn1 bankss next = next `elem` bankss

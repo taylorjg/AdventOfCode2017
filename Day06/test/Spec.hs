@@ -14,4 +14,4 @@ main = hspec $
     describe "Part 2" $
 
       it "given example" $
-        numRedistributions2 [0, 2, 7, 0] `shouldBe` (4, [2, 4, 1, 2])
+        numRedistributions2 [0, 2, 7, 0] `shouldBe` 4
