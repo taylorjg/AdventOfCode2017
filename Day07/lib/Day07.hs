@@ -6,7 +6,7 @@ import           Data.List.Split (splitOn)
 import           Data.Map        (Map)
 import qualified Data.Map        as Map
 import           Text.Regex.Base
-import           Text.Regex.TDFA
+import           Text.Regex.PCRE
 
 data Program = Program {
   name            :: String,
@@ -28,10 +28,10 @@ parseInputLine s =
     [matches] = s =~ pat :: [[String]]
     name = matches !! 1
     weight = read $ matches !! 2 :: Int
-    subProgramNames = removeEmptyStrings $ splitOn "," $ removeSpaces (matches !! 4)
+    subProgramNames = removeEmptyStrings $ splitOn "," $ removeSpaces (matches !! 3)
     removeSpaces = filter (not . isSpace)
     removeEmptyStrings = filter (/= "")
-    pat = "([a-z]+) \\(([0-9]+)\\)( -> ([a-z, ]+))?"
+    pat = "(\\w+)\\s\\((\\d+)\\)(?:\\s->\\s([\\w,\\s]+))?"
 
 bottomProgramName :: [Program] -> Maybe String
 bottomProgramName programs =
