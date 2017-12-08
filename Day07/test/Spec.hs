@@ -1,4 +1,5 @@
-import           Day07      (bottomProgramName, mkProgram, parseInputLines)
+import           Day07      (bottomProgramName, mkProgram, parseInputLines,
+                             rebalancedWeight)
 import           Test.Hspec
 
 main :: IO ()
@@ -20,7 +21,7 @@ main = hspec $ do
           mkProgram "cntj" 57 []
         ]
 
-  describe "Day07 tests" $
+  describe "Day07 tests" $ do
 
     describe "Part 1" $ do
 
@@ -31,3 +32,8 @@ main = hspec $ do
 
       it "bottom program name" $
         bottomProgramName programs `shouldBe` Just "tknk"
+
+    describe "Part 2" $
+
+      it "rebalanced weight" $
+        rebalancedWeight programs `shouldBe` Just ("ugml", 60)

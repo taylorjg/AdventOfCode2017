@@ -10,9 +10,11 @@ cabal-version:       >=1.10
 
 library
   default-language:    Haskell2010
-  build-depends:       base >=4.9 && <4.10, containers, regex-base, regex-pcre, split
-  hs-source-dirs:      Day01/lib, Day02/lib, Day03/lib, Day04/lib, Day05/lib, Day06/lib, Day07/lib
-  Exposed-modules:     Day01, Day02, Day03, Day04, Day05, Day06, Day07
+  build-depends:       base >=4.9 && <4.10, containers, split, regex-base, regex-pcre
+  hs-source-dirs:      Day01/lib, Day02/lib, Day03/lib, Day04/lib, Day05/lib,
+                       Day06/lib, Day07/lib
+  Exposed-modules:     Day01, Day02, Day03, Day04, Day05,
+                       Day06, Day07
 
 executable Day01
   main-is:             Main.hs
