@@ -4,7 +4,7 @@ import           Test.Hspec
 main :: IO ()
 main = hspec $
 
-  describe "Day09 tests" $
+  describe "Day09 tests" $ do
 
     describe "Part 1" $ do
 
@@ -14,7 +14,7 @@ main = hspec $
           parseGarbage "<>" `shouldBe` 2
 
         it "<random characters>" $
-          parseGarbage "<oidwcjoirei>" `shouldBe` 13
+          parseGarbage "<random characters>" `shouldBe` 19
 
         it "<<<<>" $
           parseGarbage "<<<<>" `shouldBe` 5
@@ -82,3 +82,26 @@ main = hspec $
 
         it "{{<a!>},{<a!>},{<a!>},{<ab>}}" $
           scoreGroups "{{<a!>},{<a!>},{<a!>},{<ab>}}" `shouldBe` 3
+
+    describe "Part 2" $ do
+
+      it "<>" $
+        lengthOfGarbageContent "<>" `shouldBe` 0
+
+      it "<random characters>" $
+        lengthOfGarbageContent "<random characters>" `shouldBe` 17
+
+      it "<<<<>" $
+        lengthOfGarbageContent "<<<<>" `shouldBe` 3
+
+      it "<{!>}>" $
+        lengthOfGarbageContent "<{!>}>" `shouldBe` 2
+
+      it "<!!>" $
+        lengthOfGarbageContent "<!!>" `shouldBe` 0
+
+      it "<!!!>>" $
+        lengthOfGarbageContent "<!!!>>" `shouldBe` 0
+
+      it "<{o\"i!a,<{i<a>" $
+        lengthOfGarbageContent "<{o\"i!a,<{i<a>" `shouldBe` 10
