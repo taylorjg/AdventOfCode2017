@@ -1,4 +1,3 @@
-import           Data.Map   (empty, fromList, singleton)
 import           Day08
 import           Test.Hspec
 
@@ -22,4 +21,4 @@ main = hspec $
         parseInputLines inputLines `shouldBe` instructions
 
       it "given example" $
-        processInstructions instructions `shouldBe` ("a", 1)
+        processInstructions instructions `shouldBe` ("a", 1, Just 10)

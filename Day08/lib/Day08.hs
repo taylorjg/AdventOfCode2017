@@ -64,25 +64,33 @@ strToComparison s =
     "==" -> Equal
     "!=" -> NotEqual
 
-processInstructions :: [Instruction] -> (String, Int)
+processInstructions :: [Instruction] -> (String, Int, Maybe Int)
 processInstructions instructions =
-  maxReg
+  (maxRegName, maxRegValue, maybeBiggestEver)
   where
-    m = foldl processInstruction Map.empty instructions
-    kvps = Map.assocs m
-    maxReg = maximumBy (\a b -> snd a `compare` snd b) kvps
+    (m, maybeBiggestEver) = foldl processInstruction (Map.empty, Nothing) instructions
+    (maxRegName, maxRegValue) = maxRegister m
 
-processInstruction :: Map String Int -> Instruction -> Map String Int
-processInstruction m instruction =
-  result
+processInstruction :: (Map String Int, Maybe Int) -> Instruction -> (Map String Int, Maybe Int)
+processInstruction (m, maybeBiggestEver) instruction =
+  (m', maybeBiggestEver')
     where
-      r1 = Map.findWithDefault 0 (comparisonReg instruction) m
-      r2 = Map.findWithDefault 0 (reg instruction) m
-      conditonMet = evaluateCondition r1 (comparisonOp instruction) (comparisonValue instruction)
-      result = if conditonMet then Map.insert (reg instruction) r2' m else m
-      r2' = case op instruction of
-        Inc -> r2 + value instruction
-        Dec -> r2 - value instruction
+      rn1 = comparisonReg instruction
+      rn2 = reg instruction
+      rv1 = Map.findWithDefault 0 rn1 m
+      rv2 = Map.findWithDefault 0 rn2 m
+      conditonMet = evaluateCondition rv1 (comparisonOp instruction) (comparisonValue instruction)
+      m' = if conditonMet
+        then Map.insert rn2 rv2' m
+        else Map.insert rn2 rv2 m
+      rv2' = case op instruction of
+        Inc -> rv2 + value instruction
+        Dec -> rv2 - value instruction
+      (_, maxRegValue) = maxRegister m'
+      maybeBiggestEver' = case maybeBiggestEver of
+        Nothing      -> Just maxRegValue
+        Just biggest | maxRegValue > biggest -> Just maxRegValue
+        current      -> current
 
 evaluateCondition :: Int -> Comparison -> Int ->  Bool
 evaluateCondition r op val =
@@ -93,3 +101,6 @@ evaluateCondition r op val =
     LessThanEqual    -> r <= val
     Equal            -> r == val
     NotEqual         -> r /= val
+
+maxRegister :: Map String Int -> (String, Int)
+maxRegister = maximumBy (\a b -> snd a `compare` snd b) . Map.assocs
