@@ -23,7 +23,7 @@ lengthOfGarbageContent s = snd $ loop1 s False 0 0
 loop1 s escape count contentLength =
   case s of
     []     -> (-1, -1)
-    '<':tl | count > 0 -> loop1 tl False (succ count) (succ contentLength)
+    '<':tl | not escape && count > 0 -> loop1 tl False (succ count) (succ contentLength)
     '<':tl -> loop1 tl False (succ count) contentLength
     '>':_  | not escape -> (succ count, contentLength)
     '!':tl | not escape -> loop1 tl True (succ count) contentLength
@@ -39,7 +39,7 @@ loop1 s escape count contentLength =
 -- {{<a>},{<a>},{<a>},{<a>}}, 5 groups.
 -- {{<!>},{<!>},{<!>},{<a>}}, 2 groups (since all but the last > are canceled).
 parseGroups :: String -> Int
-parseGroups s = length $ loop2 s 0 []
+parseGroups s = length $ fst $ loop2 s 0 [] 0
 
 -- {}, score of 1.
 -- {{{}}}, score of 1 + 2 + 3 = 6.
@@ -50,19 +50,23 @@ parseGroups s = length $ loop2 s 0 []
 -- {{<!!>},{<!!>},{<!!>},{<!!>}}, score of 1 + 2 + 2 + 2 + 2 = 9.
 -- {{<a!>},{<a!>},{<a!>},{<ab>}}, score of 1 + 2 = 3.
 scoreGroups :: String -> Int
-scoreGroups s = sum $ loop2 s 0 []
+scoreGroups s = sum $ fst $ loop2 s 0 [] 0
 
-loop2 s gDepth gDepths =
+loop2 s gDepth gDepths tgcl =
   case s of
-    []     -> gDepths
+    []     -> ([], -1)
     '{':tl ->
-      loop2 tl gDepth' (gDepth':gDepths)
+      loop2 tl gDepth' (gDepth':gDepths) tgcl
       where
         gDepth' = succ gDepth
-    '}':tl | gDepth == 1 -> gDepths
-    '}':tl -> loop2 tl (pred gDepth) gDepths
+    '}':tl | gDepth == 1 -> (gDepths, tgcl)
+    '}':tl -> loop2 tl (pred gDepth) gDepths tgcl
     '<':tl ->
-      loop2 (drop garbageLength s) gDepth gDepths
+      loop2 (drop len1 s) gDepth gDepths tgcl'
       where
-        garbageLength = parseGarbage s
-    ',':tl -> loop2 tl gDepth gDepths
+        (len1, len2) = loop1 s False 0 0
+        tgcl' = tgcl + len2
+    ',':tl -> loop2 tl gDepth gDepths tgcl
+
+totalGarbageLength :: String -> Int
+totalGarbageLength s = snd $ loop2 s 0 [] 0
