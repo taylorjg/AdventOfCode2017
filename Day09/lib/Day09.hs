@@ -27,20 +27,22 @@ parseGarbage s =
 -- {{<a>},{<a>},{<a>},{<a>}}, 5 groups.
 -- {{<!>},{<!>},{<!>},{<a>}}, 2 groups (since all but the last > are canceled).
 parseGroups :: String -> Int
-parseGroups s =
-  loop s 0 0
-  where
-    loop s gCount gDepth =
-      case s of
-        []     -> -1
-        '{':tl -> loop tl (succ gCount) (succ gDepth)
-        '}':tl | gDepth == 1 -> gCount
-        '}':tl -> loop tl gCount (pred gDepth)
-        '<':tl ->
-          loop (drop garbageLength s) gCount gDepth
-          where
-            garbageLength = parseGarbage s
-        ',':tl -> loop tl gCount gDepth
+parseGroups s = fst $ loop s 0 0 []
+
+loop s gCount gDepth gDepths =
+  case s of
+    []     -> (-1, [])
+    '{':tl ->
+      loop tl (succ gCount) gDepth' (gDepth':gDepths)
+      where
+        gDepth' = succ gDepth
+    '}':tl | gDepth == 1 -> (gCount, gDepths)
+    '}':tl -> loop tl gCount (pred gDepth) gDepths
+    '<':tl ->
+      loop (drop garbageLength s) gCount gDepth gDepths
+      where
+        garbageLength = parseGarbage s
+    ',':tl -> loop tl gCount gDepth gDepths
 
 -- {}, score of 1.
 -- {{{}}}, score of 1 + 2 + 3 = 6.
@@ -51,4 +53,4 @@ parseGroups s =
 -- {{<!!>},{<!!>},{<!!>},{<!!>}}, score of 1 + 2 + 2 + 2 + 2 = 9.
 -- {{<a!>},{<a!>},{<a!>},{<ab>}}, score of 1 + 2 = 3.
 scoreGroups :: String -> Int
-scoreGroups s = 0
+scoreGroups s = sum $ snd $ loop s 0 0 []
