@@ -22,8 +22,7 @@ const shortestRoute = finish => {
         return (dy * 2) + (dx - dy * 2);
     }
     else {
-        const straight = dy - (dx / 2);
-        return straight + dx;
+        return dy + dx / 2;
     }
 };
 
