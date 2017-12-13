@@ -17,48 +17,76 @@ const parseString = s => {
     return new Map(parseLines(lines));
 };
 
-const computePart1 = m => {
-    const maxClock = Math.max(...Array.from(m.keys()));
-    const ticks = Array.from(Array(maxClock + 1).keys());
+const moveScanners = positions => {
+    for (kvp of positions.entries()) {
+        const [range, { depth, pos, dir }] = kvp;
+        if (dir) {
+            // going down
+            const changedDir = pos === depth - 1;
+            const newPos = changedDir ? pos - 1 : pos + 1;
+            const newDir = changedDir ? !dir : dir;
+            const newValue = { pos: newPos, dir: newDir, depth };
+            positions.set(range, newValue);
+        }
+        else {
+            // going up
+            const changedDir = pos === 0;
+            const newPos = changedDir ? pos + 1 : pos - 1;
+            const newDir = changedDir ? !dir : dir;
+            const newValue = { pos: newPos, dir: newDir, depth };
+            positions.set(range, newValue);
+        }
+    }
+};
+
+const detectCatches = (acc, tick) => {
+    const scanner = acc.positions.get(tick);
+    if (scanner && scanner.pos === 0) {
+        acc.catches.push({ depth: scanner.depth, range: tick });
+    }
+};
+
+const crossFirewall = (m, delay) => {
     const seed = {
-        positions: new Map(Array.from(m.keys()).map(k => [k, { pos: 0, dir: true }])),
+        positions: new Map(Array.from(m.keys()).map(k => [k, { depth: m.get(k), pos: 0, dir: true }])),
         catches: []
     };
-    const op = (acc, tick) => {
-        const value = acc.positions.get(tick);
-        if (value) {
-            const { pos } = value;
-            if (pos === 0) {
-                acc.catches.push({ depth: m.get(tick), range: tick });
-            }
-        }
 
-        for (kvp of acc.positions.entries()) {
-            const [range, { pos, dir }] = kvp;
-            const depth = m.get(range);
-            if (dir) {
-                // going down
-                const changedDir = pos === depth - 1;
-                const newPos = changedDir ? pos - 1 : pos + 1;
-                const newDir = changedDir ? !dir : dir;
-                const newValue = { pos: newPos, dir: newDir };
-                acc.positions.set(range, newValue);
-            }
-            else {
-                // going up
-                const changedDir = pos === 0;
-                const newPos = changedDir ? pos + 1 : pos - 1;
-                const newDir = changedDir ? !dir : dir;
-                const newValue = { pos: newPos, dir: newDir };
-                acc.positions.set(range, newValue);
-            }
-        }
+    Array.from(Array(delay).keys()).forEach(() => moveScanners(seed.positions));
+    
+    const op = (acc, tick) => {
+        detectCatches(acc, tick);
+        moveScanners(acc.positions);
         return acc;
     };
-    const v1 = ticks.reduce(op, seed);
-    const v2 = v1.catches.reduce((acc, { depth, range }) => acc + depth * range, 0);
-    return v2;
+    const maxClock = Math.max(...Array.from(m.keys()));
+    const ticks = Array.from(Array(maxClock + 1).keys());
+    const finalAcc = ticks.reduce(op, seed);
+    return finalAcc.catches;
 };
+
+const computePart1 = m => {
+    const catches = crossFirewall(m, 0);
+    return catches.reduce((acc, { depth, range }) => acc + depth * range, 0);
+};
+
+const computePart2 = m => {
+
+    function* delays() {
+        let delay = 0;
+        for(;;) {
+            yield delay++;
+        }
+    }
+
+    for (const it = delays();;) {
+        const delay = it.next().value;
+        const catches = crossFirewall(m, delay);
+        if (catches.length === 0) {
+            return delay;
+        }
+    }
+};    
 
 const test = () => {
     const input = `
@@ -69,7 +97,7 @@ const test = () => {
     `;
     const map = parseString(input);
     console.log(`[test input] part1: ${computePart1(map)}`);
-    // console.log(`[test input] part2: ${computePart2(map)}`);
+    console.log(`[test input] part2: ${computePart2(map)}`);
 };
 
 const real = () => {
@@ -81,7 +109,7 @@ const real = () => {
             const input = buffer.toString();
             const map = parseString(input);
             console.log(`[real input] part1: ${computePart1(map)}`);
-            // console.log(`[real input] part2: ${computePart2(map)}`);
+            console.log(`[real input] part2: ${computePart2(map)}`);
         }
     });
 };
