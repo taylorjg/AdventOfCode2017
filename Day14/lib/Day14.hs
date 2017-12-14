@@ -1,9 +1,11 @@
 module Day14 where
 
-import           Data.List (nub)
-import           Data.Map  (Map)
-import qualified Data.Map  as Map
+import           Data.Char   (digitToInt)
+import           Data.List   (nub)
+import           Data.Map    (Map)
+import qualified Data.Map    as Map
 import           Day10
+import           Text.Printf
 
 squaresUsed :: String -> Int
 squaresUsed = length . filter (== '1') . mkGrid
@@ -52,20 +54,4 @@ mkGrid s = concatMap (concatMap toBinary . knotHash . addSuffix) [0..127]
     addSuffix n = s ++ "-" ++ show n
 
 toBinary :: Char -> String
-toBinary ch = case ch of
-  '0' -> "0000"
-  '1' -> "0001"
-  '2' -> "0010"
-  '3' -> "0011"
-  '4' -> "0100"
-  '5' -> "0101"
-  '6' -> "0110"
-  '7' -> "0111"
-  '8' -> "1000"
-  '9' -> "1001"
-  'a' -> "1010"
-  'b' -> "1011"
-  'c' -> "1100"
-  'd' -> "1101"
-  'e' -> "1110"
-  'f' -> "1111"
+toBinary = printf "%04b" . digitToInt
