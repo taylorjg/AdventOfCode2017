@@ -1,13 +1,12 @@
 const fs = require("fs");
 
-const parseLine = line => {
-    const bits = line.split(":").map(bit => bit.trim());
-    const key = parseInt(bits[0], 10);
-    const value = parseInt(bits[1], 10);
-    return [key, value];
-};
+const parseLine = line =>
+    line.split(":")
+        .map(s => s.trim())
+        .map(s => parseInt(s, 10));
 
-const parseLines = lines => lines.map(parseLine);
+const parseLines = lines =>
+    lines.map(parseLine);
 
 const parseString = s => {
     const lines = s
@@ -64,8 +63,8 @@ const crossFirewall = (m, delay) => {
         positions: initialPositions(m, delay),
         catches: []
     };
-    const op = (acc, tick) => {
-        detectCatches(acc, tick);
+    const op = (acc, range) => {
+        detectCatches(acc, range);
         moveScanners(acc.positions);
         return acc;
     };
