@@ -2,11 +2,11 @@ module Day14 where
 
 import           Data.Bits       (xor)
 import           Data.Char       (ord)
+import           Data.List       (nub)
 import           Data.List.Split (chunksOf)
 import           Data.Map        (Map)
 import qualified Data.Map        as Map
 import           Data.Maybe      (mapMaybe)
-import           Debug.Trace
 import           Text.Printf
 
 squaresUsed :: String -> Int
@@ -39,8 +39,39 @@ toBinary ch = case ch of
   'f' -> "1111"
 
 countRegions :: String -> Int
-countRegions s = rids
+countRegions s =
+  snd v10
   where
+    v10 = foldl op2 seed positions
+    op2 acc @ (m, rid) pos =
+      case v3 !! pos == '1' of
+          False -> acc
+          True ->
+            case Map.lookup pos m of
+              Just _  -> acc
+              Nothing ->
+                (m', rid')
+                where
+                  ns = neighbours2 [pos] [pos]
+                  m2 = Map.fromList $ map (\n -> (n, rid')) ns
+                  m' = Map.union m m2
+                  rid' = succ rid
+    neighbours2 :: [Int] -> [Int] -> [Int]
+    neighbours2 ps ns =
+      case nsnew5 of
+        [] -> ns
+        _  -> neighbours2 nsnew5 (ns ++ nsnew5)
+      where
+        nsnew1 = concatMap (\p ->
+          case p `mod` 128 of
+            0   -> [p + 1, p + 128, p - 128]
+            127 -> [p - 1, p + 128, p - 128]
+            _   -> [p + 1, p - 1, p + 128, p - 128]
+            ) ps
+        nsnew2 = nub nsnew1
+        nsnew3 = filter (\n -> n >= 0 && n < 16384) nsnew2
+        nsnew4 = filter (\n -> v3 !! n == '1') nsnew3
+        nsnew5 = filter (`notElem` ns) nsnew4
     v1 = map addSuffix [0..127]
     addSuffix n = s ++ "-" ++ show n
     v2 = map knotHash v1
@@ -48,18 +79,6 @@ countRegions s = rids
     range = [0..127]
     positions = [y * 128 + x | y <- range, x <- range]
     seed = (Map.empty :: Map Int Int, 0)
-    (_, rids) = foldl op seed positions
-    op acc @ (m, rid) pos =
-      -- trace ("m: " ++ show m ++ "; rid: " ++ show rid ++ "; pos: " ++ show pos ++ "; v: " ++ show (v3 !! pos)) $
-      case (used, v4) of
-        (True, id:_) -> (Map.insert pos id m, rid)
-        (True, _)    -> (Map.insert pos rid' m, rid') where rid' = succ rid
-        (False, _) -> (m, rid)
-      where
-        used = (v3 !! pos) == '1'
-        ns = neighbours pos
-        v4 = mapMaybe (`Map.lookup` m) ns
-        neighbours pos = [pos - 1, pos + 1, pos - 128, pos + 128]
 
 processList :: Int -> [Int] -> Int
 processList size xs =
