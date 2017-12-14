@@ -8,10 +8,7 @@ import           Day10
 -- import           Text.Printf
 
 squaresUsed :: String -> Int
-squaresUsed s = v4
-  where
-    v3 = common s
-    v4 = length $ filter (== '1') v3
+squaresUsed s = length $ filter (== '1') $ mkGrid s
 
 countRegions :: String -> Int
 countRegions s = rids
@@ -21,18 +18,16 @@ countRegions s = rids
     range = [0..127]
     positions = [y * 128 + x | y <- range, x <- range]
     op acc @ (m, rid) pos =
-      case isUsed pos of
-          False -> acc
-          True ->
-            case Map.lookup pos m of
-              Just _  -> acc
-              Nothing ->
-                (m', rid')
-                where
-                  ns = deepNeighbours [pos] [pos]
-                  m2 = Map.fromList $ map (\n -> (n, rid')) ns
-                  m' = Map.union m m2
-                  rid' = succ rid
+      if isUsed pos
+        then case Map.lookup pos m of
+          Just _  -> acc
+          Nothing -> (m', rid')
+            where
+              ns = deepNeighbours [pos] [pos]
+              m2 = Map.fromList $ map (\n -> (n, rid')) ns
+              m' = Map.union m m2
+              rid' = succ rid
+        else acc
     deepNeighbours ps ns =
       case nsnew5 of
         [] -> ns
@@ -48,15 +43,12 @@ countRegions s = rids
             0   -> [p + 1, p + 128, p - 128] -- left edge
             127 -> [p - 1, p + 128, p - 128] -- right edge
             _   -> [p + 1, p - 1, p + 128, p - 128] -- elsewhere
-    v3 = common s
-    isUsed pos = v3 !! pos == '1'
+    grid = mkGrid s
+    isUsed pos = grid !! pos == '1'
 
-common :: String -> String
-common s = v3
+mkGrid :: String -> String
+mkGrid s = concatMap (concatMap toBinary . knotHash . addSuffix) [0..127]
   where
-    v1 = map addSuffix [0..127]
-    v2 = map knotHash v1
-    v3 = concatMap (concatMap toBinary) v2
     addSuffix n = s ++ "-" ++ show n
 
 toBinary :: Char -> String
