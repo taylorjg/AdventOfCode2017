@@ -13,10 +13,10 @@ library
   build-depends:       base >=4.9 && <4.10, containers, split, regex-base, regex-pcre
   hs-source-dirs:      Day01/lib, Day02/lib, Day03/lib, Day04/lib, Day05/lib,
                        Day06/lib, Day07/lib, Day08/lib, Day09/lib, Day10/lib,
-                       Day11/lib
+                       Day11/lib,                       Day14/lib
   Exposed-modules:     Day01, Day02, Day03, Day04, Day05,
                        Day06, Day07, Day08, Day09, Day10,
-                       Day11
+                       Day11,               Day14
 
 executable Day01
   main-is:             Main.hs
@@ -159,4 +159,17 @@ test-suite Day11Tests
   default-language:    Haskell2010
   build-depends:       base >=4.9 && <4.10, AdventOfCode2017, hspec
   hs-source-dirs:      Day11/test
+  main-is:             Spec.hs
+
+executable Day14
+  main-is:             Main.hs
+  build-depends:       base >=4.9 && <4.10, AdventOfCode2017
+  hs-source-dirs:      Day14/src
+  default-language:    Haskell2010
+
+test-suite Day14Tests
+  type:                exitcode-stdio-1.0
+  default-language:    Haskell2010
+  build-depends:       base >=4.9 && <4.10, AdventOfCode2017, hspec
+  hs-source-dirs:      Day14/test
   main-is:             Spec.hs
