@@ -3,6 +3,10 @@ module Day14 where
 import           Data.Bits       (xor)
 import           Data.Char       (ord)
 import           Data.List.Split (chunksOf)
+import           Data.Map        (Map)
+import qualified Data.Map        as Map
+import           Data.Maybe      (mapMaybe)
+import           Debug.Trace
 import           Text.Printf
 
 squaresUsed :: String -> Int
@@ -10,10 +14,10 @@ squaresUsed s =
  v4
   where
     v1 = map addSuffix [0..127]
+    addSuffix n = s ++ "-" ++ show n
     v2 = map knotHash v1
     v3 = concatMap (concatMap toBinary) v2
     v4 = length $ filter (== '1') v3
-    addSuffix n = s ++ "-" ++ show n
 
 toBinary :: Char -> String
 toBinary ch = case ch of
@@ -35,7 +39,27 @@ toBinary ch = case ch of
   'f' -> "1111"
 
 countRegions :: String -> Int
-countRegions s = 0
+countRegions s = rids
+  where
+    v1 = map addSuffix [0..127]
+    addSuffix n = s ++ "-" ++ show n
+    v2 = map knotHash v1
+    v3 = concatMap (concatMap toBinary) v2
+    range = [0..127]
+    positions = [y * 128 + x | y <- range, x <- range]
+    seed = (Map.empty :: Map Int Int, 0)
+    (_, rids) = foldl op seed positions
+    op acc @ (m, rid) pos =
+      -- trace ("m: " ++ show m ++ "; rid: " ++ show rid ++ "; pos: " ++ show pos ++ "; v: " ++ show (v3 !! pos)) $
+      case (used, v4) of
+        (True, id:_) -> (Map.insert pos id m, rid)
+        (True, _)    -> (Map.insert pos rid' m, rid') where rid' = succ rid
+        (False, _) -> (m, rid)
+      where
+        used = (v3 !! pos) == '1'
+        ns = neighbours pos
+        v4 = mapMaybe (`Map.lookup` m) ns
+        neighbours pos = [pos - 1, pos + 1, pos - 128, pos + 128]
 
 processList :: Int -> [Int] -> Int
 processList size xs =
