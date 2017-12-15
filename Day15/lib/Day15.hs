@@ -1,6 +1,6 @@
 module Day15 where
 
-import           Data.Bits
+import           Data.Bits ((.&.))
 import           Data.Int  (Int64)
 import           Data.List (iterate)
 
