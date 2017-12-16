@@ -4,7 +4,7 @@ module Day16 (
   dance,
   wholeDance) where
 
-import           Data.List       (elemIndex, foldl')
+import           Data.List       (elemIndex, partition)
 import           Data.List.Split (splitOn)
 import           Data.Maybe      (fromMaybe)
 
@@ -77,45 +77,33 @@ makeMove s m = case m of
   Exchange a b -> makeExchangeMove s a b
   Partner a b  -> makePartnerMove s a b
 
-dance' :: String -> [DanceMove] -> String
-dance' = foldl makeMove
+makeMoves :: String -> [DanceMove] -> String
+makeMoves = foldl makeMove
 
 dance :: Int -> [DanceMove] -> String
 dance n moves = wholeDance n moves 1
 
--- wholeDance :: Int -> [DanceMove] -> Int -> String
--- wholeDance n moves steps =
---   foldl' op initial [1..steps]
---   where
---     initial = take n ['a'..]
---     op s _ = dance' s moves
-
--- wholeDance :: Int -> [DanceMove] -> Int -> String
--- wholeDance n moves steps =
---   foldr op initial [1..steps]
---   where
---     initial = take n ['a'..]
---     op _ s = dance' s moves
-
--- wholeDance :: Int -> [DanceMove] -> Int -> String
--- wholeDance n moves steps =
---   result
---   where
---     result = head $ drop steps $ iterate' f initial
---     initial = take n ['a'..]
---     f s = dance' s moves
-
 wholeDance :: Int -> [DanceMove] -> Int -> String
-wholeDance n moves steps =
-  result
+wholeDance n moves steps = foldl op initial [1..d]
   where
-    result = fred f initial steps
+    op s _ = makeMoves s moves
+    (ps, nps) = decompose moves
     initial = take n ['a'..]
-    f s = dance' s moves
+    a = findCycle initial ps
+    b = findCycle initial nps
+    c = lcm a b
+    d = steps `mod` c
 
-iterate' :: (a -> a) -> a -> [a]
-iterate' f x = x `seq` (x : iterate' f (f x))
+decompose :: [DanceMove] -> ([DanceMove], [DanceMove])
+decompose = partition isPartnerMove
+  where
+    isPartnerMove m = case m of
+      Partner _ _ -> True
+      _           -> False
 
-fred :: (a -> a) -> a -> Int -> a
-fred _ x 0 = x
-fred f x n = x `seq` fred f (f x) (pred n)
+findCycle :: String -> [DanceMove] -> Int
+findCycle s moves = length ss'
+  where
+    ss' = takeWhile (/= s) ss
+    ss = drop 1 $ iterate f s
+    f s = makeMoves s moves
