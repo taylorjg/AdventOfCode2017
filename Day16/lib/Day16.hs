@@ -4,7 +4,7 @@ module Day16 (
   dance,
   wholeDance) where
 
-import           Data.List       (elemIndex)
+import           Data.List       (elemIndex, foldl')
 import           Data.List.Split (splitOn)
 import           Data.Maybe      (fromMaybe)
 
@@ -83,9 +83,39 @@ dance' = foldl makeMove
 dance :: Int -> [DanceMove] -> String
 dance n moves = wholeDance n moves 1
 
+-- wholeDance :: Int -> [DanceMove] -> Int -> String
+-- wholeDance n moves steps =
+--   foldl' op initial [1..steps]
+--   where
+--     initial = take n ['a'..]
+--     op s _ = dance' s moves
+
+-- wholeDance :: Int -> [DanceMove] -> Int -> String
+-- wholeDance n moves steps =
+--   foldr op initial [1..steps]
+--   where
+--     initial = take n ['a'..]
+--     op _ s = dance' s moves
+
+-- wholeDance :: Int -> [DanceMove] -> Int -> String
+-- wholeDance n moves steps =
+--   result
+--   where
+--     result = head $ drop steps $ iterate' f initial
+--     initial = take n ['a'..]
+--     f s = dance' s moves
+
 wholeDance :: Int -> [DanceMove] -> Int -> String
 wholeDance n moves steps =
-  foldl op initial [1..steps]
+  result
   where
+    result = fred f initial steps
     initial = take n ['a'..]
-    op s _ = dance' s moves
+    f s = dance' s moves
+
+iterate' :: (a -> a) -> a -> [a]
+iterate' f x = x `seq` (x : iterate' f (f x))
+
+fred :: (a -> a) -> a -> Int -> a
+fred _ x 0 = x
+fred f x n = x `seq` fred f (f x) (pred n)

@@ -10,5 +10,5 @@ main = do
   let answer1 = dance 16 danceMoves
   putStrLn $ "answer1: " ++ show answer1
 
-  let answer2 = wholeDance 16 danceMoves 1000000000
+  let answer2 = wholeDance 16 danceMoves 1000000 -- 1000000000
   putStrLn $ "answer2: " ++ show answer2
