@@ -37,6 +37,7 @@ parseDanceMove s = case head s of
 parseDanceMoves :: String -> [DanceMove]
 parseDanceMoves input = map parseDanceMove $ splitOn "," input
 
+makeSpinMove :: String -> Int -> String
 makeSpinMove s x = s'
   where
     len = length s
@@ -44,6 +45,7 @@ makeSpinMove s x = s'
     v2 = take (len - x) s
     s' = v1 ++ v2
 
+makeExchangeMove :: String -> Int -> Int -> String
 makeExchangeMove s a b = s'
   where
     cha = s !! a
@@ -54,6 +56,7 @@ makeExchangeMove s a b = s'
       _ | idx == b -> cha
       _ -> ch) z
 
+makePartnerMove :: String -> Char -> Char -> String
 makePartnerMove s a b = s'
   where
     idxa = fromMaybe 0 $ elemIndex a s
@@ -65,11 +68,10 @@ makePartnerMove s a b = s'
       _ -> ch) z
 
 makeMove :: String -> DanceMove -> String
-makeMove s m =
-  case m of
-    Spin x       -> makeSpinMove s x
-    Exchange a b -> makeExchangeMove s a b
-    Partner a b  -> makePartnerMove s a b
+makeMove s m = case m of
+  Spin x       -> makeSpinMove s x
+  Exchange a b -> makeExchangeMove s a b
+  Partner a b  -> makePartnerMove s a b
 
 dance :: Int -> [DanceMove] -> String
 dance n = foldl makeMove initial
