@@ -1,4 +1,8 @@
-module Day16 (parseDanceMoves, dance, DanceMove(..)) where
+module Day16 (
+  DanceMove(..),
+  parseDanceMoves,
+  dance,
+  wholeDance) where
 
 import           Data.List       (elemIndex)
 import           Data.List.Split (splitOn)
@@ -73,7 +77,15 @@ makeMove s m = case m of
   Exchange a b -> makeExchangeMove s a b
   Partner a b  -> makePartnerMove s a b
 
+dance' :: String -> [DanceMove] -> String
+dance' = foldl makeMove
+
 dance :: Int -> [DanceMove] -> String
-dance n = foldl makeMove initial
+dance n moves = wholeDance n moves 1
+
+wholeDance :: Int -> [DanceMove] -> Int -> String
+wholeDance n moves steps =
+  foldl op initial [1..steps]
   where
     initial = take n ['a'..]
+    op s _ = dance' s moves
