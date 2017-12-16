@@ -61,15 +61,10 @@ makeExchangeMove s a b = s'
       _ -> ch) z
 
 makePartnerMove :: String -> Char -> Char -> String
-makePartnerMove s a b = s'
+makePartnerMove s a b = makeExchangeMove s idxa idxb
   where
     idxa = fromMaybe 0 $ elemIndex a s
     idxb = fromMaybe 0 $ elemIndex b s
-    z = zip s [0..]
-    s' = map (\(ch, idx) -> case idx of
-      _ | idx == idxa -> b
-      _ | idx == idxb -> a
-      _ -> ch) z
 
 makeMove :: String -> DanceMove -> String
 makeMove s m = case m of
