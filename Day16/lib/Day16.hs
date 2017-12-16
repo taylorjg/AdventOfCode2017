@@ -17,26 +17,25 @@ data DanceMove =
 parseSpin :: String -> DanceMove
 parseSpin s = Spin x
   where
-    x = read $ drop 1 s
+    x = read s
 
 parseExchange :: String -> DanceMove
 parseExchange s = Exchange a b
    where
-    pos = fromMaybe 0 $ elemIndex '/' s
-    a = read $ take (pos - 1) $ drop 1 s
-    b = read $ take (length s) $ drop (pos + 1) s
+    bits = splitOn "/" s
+    a = read $ head bits
+    b = read $ last bits
 
 parsePartner :: String -> DanceMove
 parsePartner s = Partner a b
   where
-    a = s !! 1
-    b = s !! 3
+    a = head s
+    b = last s
 
 parseDanceMove :: String -> DanceMove
-parseDanceMove s = case head s of
-  's' -> parseSpin s
-  'x' -> parseExchange s
-  'p' -> parsePartner s
+parseDanceMove ('s':rest) = parseSpin rest
+parseDanceMove ('x':rest) = parseExchange rest
+parseDanceMove ('p':rest) = parsePartner rest
 
 parseDanceMoves :: String -> [DanceMove]
 parseDanceMoves input = map parseDanceMove $ splitOn "," input
@@ -92,9 +91,8 @@ wholeDance n moves steps = foldl op initial [1..d]
 decompose :: [DanceMove] -> ([DanceMove], [DanceMove])
 decompose = partition isPartnerMove
   where
-    isPartnerMove m = case m of
-      Partner _ _ -> True
-      _           -> False
+    isPartnerMove (Partner _ _) = True
+    isPartnerMove _             = False
 
 findCycle :: String -> [DanceMove] -> Int
 findCycle s moves = length ss'
