@@ -2,9 +2,7 @@ const spinlock1 = steps => {
     const buffer = [0];
     let pos = 0;
     for (let i = 1; i <= 2017; i++) {
-        const len = i;
-        const insertPos = (pos + steps) % len;
-        pos = insertPos + 1;
+        pos = (pos + steps) % i + 1;
         buffer.splice(pos, 0, i);
     }
     return buffer[pos + 1];
