@@ -14,7 +14,7 @@ const spinlock2 = steps => {
     let result = -1;
     for (let i = 1; i <= 50000000; i++) {
         pos = (pos + steps) % i + 1;
-        if (pos === 0) {
+        if (pos <= zeroPos) {
             // Keep track of where 0 is.
             zeroPos++;
         }
