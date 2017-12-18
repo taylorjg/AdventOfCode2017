@@ -13,7 +13,7 @@ main = hspec $
               Add 'a' (Val 2),
               Mul 'a' (Reg 'a'),
               Mod 'a' (Val 5),
-              Snd 'a',
+              Snd (Reg 'a'),
               Set 'a' (Val 0),
               Rcv 'a',
               Jgz (Reg 'a') (Val (-1)),
