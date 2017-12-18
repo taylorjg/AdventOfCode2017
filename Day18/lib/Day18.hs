@@ -18,7 +18,7 @@ data Instruction =
   Mul Char Value |
   Snd Char |
   Rcv Char |
-  Jgz Char Value
+  Jgz Value Value
   deriving (Eq, Show)
 
 parseOneOperand :: (Char -> Instruction) -> [String] -> Instruction
@@ -31,6 +31,12 @@ parseTwoOperands mkInstruction bits = mkInstruction reg val
   where
     reg = head $ bits !! 1
     val = parseValue $ bits !! 2
+
+parseBastard :: (Value -> Value -> Instruction) -> [String] -> Instruction
+parseBastard mkInstruction bits = mkInstruction val1 val2
+  where
+    val1 = parseValue $ bits !! 1
+    val2 = parseValue $ bits !! 2
 
 parseValue :: String -> Value
 parseValue s = case head s of
@@ -45,7 +51,7 @@ parseLine line = case head bits of
     "mul" -> parseTwoOperands Mul bits
     "snd" -> parseOneOperand Snd bits
     "rcv" -> parseOneOperand Rcv bits
-    "jgz" -> parseTwoOperands Jgz bits
+    "jgz" -> parseBastard Jgz bits
   where
     bits = splitOn " " line
 
@@ -60,9 +66,9 @@ processInstruction (regs, ip, lastFreq, rcvFreq) instruction =
   case instruction of
 
     Add r v -> fn2 r v (+)
-    Set r v  -> fn2 r v (flip const)
+    Set r v -> fn2 r v (flip const)
     Mul r v -> fn2 r v (*)
-    Mod r v  -> fn2 r v mod
+    Mod r v -> fn2 r v mod
 
     Snd r          -> (regs, succ ip, freq, rcvFreq)
       where
@@ -75,20 +81,17 @@ processInstruction (regs, ip, lastFreq, rcvFreq) instruction =
       where
         rv = Map.findWithDefault 0 r regs
 
-    Jgz r (Reg r2) ->
-      if rv > 0
+    Jgz v1 v2 ->
+      if rv1 > 0
         then (regs, ip + rv2, lastFreq, rcvFreq)
         else (regs, succ ip, lastFreq, rcvFreq)
-       where
-        rv = Map.findWithDefault 0 r regs
-        rv2 = Map.findWithDefault 0 r2 regs
-
-    Jgz r (Val v)  ->
-      if rv > 0
-        then (regs, ip + v, lastFreq, rcvFreq)
-        else (regs, succ ip, lastFreq, rcvFreq)
       where
-        rv = Map.findWithDefault 0 r regs
+        rv1 = case v1 of
+          Reg r -> Map.findWithDefault 0 r regs
+          Val v -> v
+        rv2 = case v2 of
+          Reg r -> Map.findWithDefault 0 r regs
+          Val v -> v
 
     where
       fn2 r v op = (regs', succ ip, lastFreq, rcvFreq)
@@ -113,24 +116,33 @@ runProgram instructions = loop initialState
         maybeInstruction = Map.lookup ip program
         program = Map.fromList $ zip [0..] instructions
 
-type RvcQueues = Map Int [Int]
-
 data State3 = State3 {
   regs    :: Regs,
   ip      :: Int,
   numSnds :: Int,
   pid     :: Int,
   blocked :: Bool
-  } deriving (Eq, Ord)
+  } deriving (Eq, Ord, Show)
+
+mkState :: Int -> State3
+mkState pid = State3 {
+  regs = Map.singleton 'p' pid,
+  ip = 0,
+  numSnds = 0,
+  pid = pid,
+  blocked = False
+}
+
+type RvcQueues = Map Int [Int]
 
 processInstruction2 :: State3 -> RvcQueues -> Instruction -> (State3, RvcQueues)
 processInstruction2 state rcvQueues instruction =
   case instruction of
 
     Add r v -> fn2 r v (+)
-    Set r v  -> fn2 r v (flip const)
+    Set r v -> fn2 r v (flip const)
     Mul r v -> fn2 r v (*)
-    Mod r v  -> fn2 r v mod
+    Mod r v -> fn2 r v rem
 
     Snd r          -> (state { ip = succ (ip state), numSnds = succ (numSnds state) }, rcvQueues')
       where
@@ -142,7 +154,7 @@ processInstruction2 state rcvQueues instruction =
 
     Rcv r          ->
       case q of
-        v:vs -> (state { regs = regs', ip = succ (ip state), blocked = False }, rcvQueues')
+        v:vs -> (state { regs = regs', ip = succ (ip state) }, rcvQueues')
           where
             regs' = Map.insert r v (regs state)
             rcvQueues' = Map.insert thisPid vs rcvQueues
@@ -150,20 +162,17 @@ processInstruction2 state rcvQueues instruction =
       where
         q = Map.findWithDefault [] thisPid rcvQueues
 
-    Jgz r (Reg r2) ->
-      if rv > 0
+    Jgz v1 v2 ->
+      if rv1 > 0
         then (state { ip = ip state + rv2 }, rcvQueues)
         else (state { ip = succ (ip state) }, rcvQueues)
-       where
-        rv = Map.findWithDefault 0 r (regs state)
-        rv2 = Map.findWithDefault 0 r2 (regs state)
-
-    Jgz r (Val v)  ->
-      if rv > 0
-        then (state { ip = ip state + v }, rcvQueues)
-        else (state { ip = succ (ip state) }, rcvQueues)
       where
-        rv = Map.findWithDefault 0 r (regs state)
+        rv1 = case v1 of
+          Reg r -> Map.findWithDefault 0 r (regs state)
+          Val v -> v
+        rv2 = case v2 of
+          Reg r -> Map.findWithDefault 0 r (regs state)
+          Val v -> v
 
     where
       thisPid = pid state
@@ -176,38 +185,29 @@ processInstruction2 state rcvQueues instruction =
             Reg r -> Map.findWithDefault 0 r (regs state)
             Val v -> v
 
-mkState :: Int -> State3
-mkState pid = State3 {
-  regs = Map.singleton 'p' pid,
-  ip = 0,
-  numSnds = 0,
-  pid = pid,
-  blocked = False
-}
-
 runPrograms :: [Instruction] -> (State3, State3)
 runPrograms instructions =
-  loop s0 s1 rvcQueues
+  loop state0 state1 rvcQueues
   where
-    s0 = mkState 0
-    s1 = mkState 1
+    state0 = mkState 0
+    state1 = mkState 1
     rvcQueues = Map.fromList [(0, []), (1, [])]
-    loop s0 s1 rcvq =
+    loop s0 s1 rcvq0 =
       case (ms0, ms1) of
-        (Just s0', Just s1') | blocked s0' && blocked s1' -> (s0', s1') -- deadlock
+        (Just s0', Just s1') | blocked s0' && blocked s1' -> (s0', s1')
         (Nothing, Nothing)   -> (s0, s1)
         (Just s0', Just s1') -> loop s0' s1' rcvq2
         (Nothing, Just s1')  -> loop s0 s1' rcvq2
         (Just s0', Nothing)  -> loop s0' s1 rcvq2
       where
-        m0 = advance s0 rcvq
-        rcvq1 = maybe rcvq snd m0
+        m0 = advance s0 rcvq0
+        rcvq1 = maybe rcvq0 snd m0
         m1 = advance s1 rcvq1
         rcvq2 = maybe rcvq1 snd m1
         ms0 = fmap fst m0
         ms1 = fmap fst m1
-    advance state rcvQueues =
-      fmap (processInstruction2 unblockedState rcvQueues) maybeInstruction
+    advance state rcvq =
+      fmap (processInstruction2 unblockedState rcvq) maybeInstruction
       where
         unblockedState = state { blocked = False }
         maybeInstruction = Map.lookup (ip state) program

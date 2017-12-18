@@ -16,9 +16,9 @@ main = hspec $
               Snd 'a',
               Set 'a' (Val 0),
               Rcv 'a',
-              Jgz 'a' (Val (-1)),
+              Jgz (Reg 'a') (Val (-1)),
               Set 'a' (Val 1),
-              Jgz 'a' (Val (-2))
+              Jgz (Reg 'a') (Val (-2))
             ]
 
       it "can parse input" $ do
