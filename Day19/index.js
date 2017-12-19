@@ -96,31 +96,21 @@ const computePart1 = rd => {
     }
 };
 
-const test = () => {
-    fs.readFile("Day19/test.txt", (err, buffer) => {
+const run = (fileName, label) => {
+    fs.readFile(fileName, (err, buffer) => {
         if (err) {
             console.log(`err: ${err}`);
         }
         else {
             const input = buffer.toString();
             const rd = parseRoutingDiagram(input);
-            console.log(`[test input] ${JSON.stringify(computePart1(rd))}`);
+            console.log(`[${label} input] ${JSON.stringify(computePart1(rd))}`);
         }
     });
 };
 
-const real = () => {
-    fs.readFile("Day19/input.txt", (err, buffer) => {
-        if (err) {
-            console.log(`err: ${err}`);
-        }
-        else {
-            const input = buffer.toString();
-            const rd = parseRoutingDiagram(input);
-            console.log(`[real input] ${JSON.stringify(computePart1(rd))}`);
-        }
-    });
-};
+const test = () => run("Day19/test.txt", "test");
+const real = () => run("Day19/input.txt", "real");
 
 test();
 real();
