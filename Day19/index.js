@@ -9,8 +9,7 @@ const parseRoutingDiagram = input => {
 
 const computePart1 = rd => {
 
-    let result = "";
-    let stepCount = 0;
+    const isLetter = ch => ch >= 'A' && ch <= 'Z';
 
     const lookupPos = ({ x, y }) => {
         if (x < 0 || y < 0 || y >= rd.length || x >= rd[0].length) {
@@ -26,23 +25,45 @@ const computePart1 = rd => {
         return { x, y, dir };
     };
 
+    const nextPosInDir = (pos, optionalDir) => {
+        const { x, y } = pos;
+        const dir = optionalDir || pos.dir;
+        switch (dir) {
+            case 'L':
+                return { x: x - 1, y, dir };
+            case 'R':
+                return { x: x + 1, y, dir };
+            case 'U':
+                return { x, y: y - 1, dir };
+            case 'D':
+                return { x, y: y + 1, dir };
+        }
+    }
+
+    let result = "";
+    let stepCount = 0;
+
     const findNextPos = pos => {
-        const pos2 = nextPosInDir(pos);
+        const nextPos = nextPosInDir(pos);
+
+        // This doesn't look right - but it works!
+        // Surely should be lookupPos(pos) ?
         const ch = lookupPos(pos);
+
         if (isLetter(ch)) {
             // Maintain direction and collect a letter.
             result += ch;
             stepCount++;
-            return pos2;
+            return nextPos;
         }
         if (ch === '|' || ch === '-') {
             // Maintain direction.
             stepCount++;
-            return pos2;
+            return nextPos;
         }
         if (ch === '+') {
             // Change direction.
-            switch (pos2.dir) {
+            switch (nextPos.dir) {
                 case 'L':
                 case 'R':
                     {
@@ -65,35 +86,12 @@ const computePart1 = rd => {
                     }
             }
         }
+
         return null;
     };
 
-    const isLetter = ch => ch >= 'A' && ch <= 'Z';
-
-    const nextPosInDir = (pos, optionalDir) => {
-        const { x, y } = pos;
-        const dir = optionalDir || pos.dir;
-        switch (dir) {
-            case 'L':
-                return { x: x - 1, y, dir };
-            case 'R':
-                return { x: x + 1, y, dir };
-            case 'U':
-                return { x, y: y - 1, dir };
-            case 'D':
-                return { x, y: y + 1, dir };
-        }
-    }
-
-    let pos = findInitialPos();
-
-    for (; ;) {
-        const pos2 = findNextPos(pos);
-        if (!pos2) {
-            return { result, stepCount };
-        }
-        pos = pos2;
-    }
+    for (let pos = findInitialPos(); !!pos; pos = findNextPos(pos));
+    return { result, stepCount };
 };
 
 const run = (fileName, label) => {
