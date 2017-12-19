@@ -40,58 +40,47 @@ const computePart1 = rd => {
         }
     }
 
-    let result = "";
+    const findNewDir = pos => {
+        const isLR = pos => pos.dir === 'L' || pos.dir === 'R';
+        const pos1 = nextPosInDir(pos, isLR(pos) ? 'U' : 'L');
+        const pos2 = nextPosInDir(pos, isLR(pos) ? 'D' : 'R');
+        if (lookupPos(pos1) !== ' ') return pos1;
+        if (lookupPos(pos2) !== ' ') return pos2;
+        return null;
+    };
+
+    let letters = "";
     let stepCount = 0;
 
-    const findNextPos = pos => {
-        const nextPos = nextPosInDir(pos);
+    const findNextPos = currPos => {
 
-        // This doesn't look right - but it works!
-        // Surely should be lookupPos(pos) ?
-        const ch = lookupPos(pos);
-
-        if (isLetter(ch)) {
-            // Maintain direction and collect a letter.
-            result += ch;
-            stepCount++;
-            return nextPos;
+        if (isLetter(lookupPos(currPos))) {
+            letters += lookupPos(currPos);
         }
-        if (ch === '|' || ch === '-') {
+
+        const nextPos = nextPosInDir(currPos);
+        const ch = lookupPos(nextPos);
+        stepCount += 1;
+
+        if (ch === '|' || ch === '-' || isLetter(ch)) {
             // Maintain direction.
-            stepCount++;
             return nextPos;
         }
+
         if (ch === '+') {
             // Change direction.
-            switch (nextPos.dir) {
-                case 'L':
-                case 'R':
-                    {
-                        const pos3 = nextPosInDir(pos, 'U');
-                        const pos4 = nextPosInDir(pos, 'D');
-                        const ch3 = lookupPos(pos3);
-                        const ch4 = lookupPos(pos4);
-                        if (ch3 !== ' ') return (stepCount++, pos3);
-                        if (ch4 !== ' ') return (stepCount++, pos4);
-                    }
-                case 'U':
-                case 'D':
-                    {
-                        const pos3 = nextPosInDir(pos, 'L');
-                        const pos4 = nextPosInDir(pos, 'R');
-                        const ch3 = lookupPos(pos3);
-                        const ch4 = lookupPos(pos4);
-                        if (ch3 !== ' ') return (stepCount++, pos3);
-                        if (ch4 !== ' ') return (stepCount++, pos4);
-                    }
+            const newDirPos = findNewDir(nextPos);
+            if (newDirPos) {
+                stepCount += 1;
+                return newDirPos;
             }
         }
 
         return null;
     };
 
-    for (let pos = findInitialPos(); !!pos; pos = findNextPos(pos));
-    return { result, stepCount };
+    for (let currPos = findInitialPos(); !!currPos; currPos = findNextPos(currPos));
+    return { letters, stepCount };
 };
 
 const run = (fileName, label) => {
