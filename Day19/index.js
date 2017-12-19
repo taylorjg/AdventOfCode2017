@@ -10,6 +10,7 @@ const parseRoutingDiagram = input => {
 const computePart1 = rd => {
 
     let result = "";
+    let stepCount = 0;
 
     const lookupPos = ({ x, y }) => {
         if (x < 0 || y < 0 || y >= rd.length || x >= rd[0].length) {
@@ -31,10 +32,12 @@ const computePart1 = rd => {
         if (isLetter(ch)) {
             // Maintain direction and collect a letter.
             result += ch;
+            stepCount++;
             return pos2;
         }
         if (ch === '|' || ch === '-') {
             // Maintain direction.
+            stepCount++;
             return pos2;
         }
         if (ch === '+') {
@@ -47,8 +50,8 @@ const computePart1 = rd => {
                         const pos4 = nextPosInDir(pos, 'D');
                         const ch3 = lookupPos(pos3);
                         const ch4 = lookupPos(pos4);
-                        if (ch3 !== ' ') return pos3;
-                        if (ch4 !== ' ') return pos4;
+                        if (ch3 !== ' ') return (stepCount++, pos3);
+                        if (ch4 !== ' ') return (stepCount++, pos4);
                     }
                 case 'U':
                 case 'D':
@@ -57,8 +60,8 @@ const computePart1 = rd => {
                         const pos4 = nextPosInDir(pos, 'R');
                         const ch3 = lookupPos(pos3);
                         const ch4 = lookupPos(pos4);
-                        if (ch3 !== ' ') return pos3;
-                        if (ch4 !== ' ') return pos4;
+                        if (ch3 !== ' ') return (stepCount++, pos3);
+                        if (ch4 !== ' ') return (stepCount++, pos4);
                     }
             }
         }
@@ -87,7 +90,7 @@ const computePart1 = rd => {
     for (; ;) {
         const pos2 = findNextPos(pos);
         if (!pos2) {
-            return result;
+            return { result, stepCount };
         }
         pos = pos2;
     }
@@ -101,7 +104,7 @@ const test = () => {
         else {
             const input = buffer.toString();
             const rd = parseRoutingDiagram(input);
-            console.log(`[real input] part1: ${computePart1(rd)}`);
+            console.log(`[test input] ${JSON.stringify(computePart1(rd))}`);
         }
     });
 };
@@ -114,7 +117,7 @@ const real = () => {
         else {
             const input = buffer.toString();
             const rd = parseRoutingDiagram(input);
-            console.log(`[real input] part1: ${computePart1(rd)}`);
+            console.log(`[real input] ${JSON.stringify(computePart1(rd))}`);
         }
     });
 };
