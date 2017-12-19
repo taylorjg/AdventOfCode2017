@@ -40,9 +40,8 @@ const computePart1 = rd => {
         }
     }
 
-    const isLR = pos => pos.dir === 'L' || pos.dir === 'R';
-
     const findNewDir = pos => {
+        const isLR = pos => pos.dir === 'L' || pos.dir === 'R';
         const pos1 = nextPosInDir(pos, isLR(pos) ? 'U' : 'L');
         const pos2 = nextPosInDir(pos, isLR(pos) ? 'D' : 'R');
         if (lookupPos(pos1) !== ' ') return pos1;
