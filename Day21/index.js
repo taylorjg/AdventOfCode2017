@@ -73,7 +73,7 @@ const dumpGrids = grids => {
     const ns = Array.from(Array(n).keys());
     const chunkIndices = Array.from(Array(numChunks).keys());
     const chunks = chunkIndices.map(i => grids.slice(i * numChunks, (i + 1) * numChunks));
-    chunks.forEach(chunk => {
+    chunks.forEach((chunk, chunkIndex) => {
         ns.forEach(i => {
             const rows = chunkIndices.map(j => chunk[j][i]);
             const line = rows.join("|");
@@ -81,7 +81,9 @@ const dumpGrids = grids => {
         });
         const dashes = "-".repeat(n);
         const separator = Array(numChunks).fill(dashes).join("+");
-        console.log(separator);
+        if (chunkIndex + 1 < numChunks) {
+            console.log(separator);
+        }
     });
     console.log();
 };
