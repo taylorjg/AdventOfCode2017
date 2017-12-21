@@ -56,12 +56,63 @@ const nearestToZero = particles => {
     return result;
 };
 
+const positionsMatch = (p1, p2) =>
+    p1.x === p2.x && p1.y === p2.y && p1.z === p2.z;
+
+const findCollisions = particles => {
+    const collisions = [];
+    particles.map(particle => {
+        const index = collisions.findIndex(collision => positionsMatch(collision[0], particle.p));
+        if (index >= 0) {
+            collisions[index][1] += 1;
+        }
+        else {
+            collisions.push([particle.p, 1]);
+        }
+    });
+
+    return collisions
+        .filter(collision => collision[1] > 1)
+        .map(collision => collision[0]);
+};
+
 const computePart1 = particles => {
-    const TICKS = 10000;
-    for (let i = 0; i < TICKS; i++) {
+
+    const ntzs = [];
+    let count = 0;
+
+    const CONVERGENCE_THRESHOLD = 300;
+
+    const converged = () => {
+        const len = ntzs.length;
+        if (len < CONVERGENCE_THRESHOLD) return false;
+        if (len > CONVERGENCE_THRESHOLD) ntzs.splice(0, len - CONVERGENCE_THRESHOLD);
+        const indices = ntzs.map(ntz => ntz.index);
+        const distinctIndices = new Set(indices);
+        return distinctIndices.size === 1;
+    };
+
+    for (; !converged(); count++) {
         processParticles(particles);
+        const ntz = nearestToZero(particles);
+        ntzs.push(ntz);
     }
-    return nearestToZero(particles).index;
+
+    console.log(`Converged after ${count} ticks`);
+    return ntzs[0].index;
+};
+
+const computePart2 = particles => {
+
+    for (let count = 0; count < 1000; count++) {
+        processParticles(particles);
+        const collisions = findCollisions(particles);
+        collisions.forEach((collision, index) => {
+            particles = particles.filter(particle => !positionsMatch(particle.p, collision));
+        });
+    }
+
+    return particles.length;
 };
 
 const run = (fileName, label) => {
@@ -71,14 +122,18 @@ const run = (fileName, label) => {
         }
         else {
             const input = buffer.toString();
-            const particles = parseInput(input);
-            console.log(`[${label} input] ${computePart1(particles)}`);
+            const particles1 = parseInput(input);
+            const particles2 = parseInput(input);
+            console.log(`[${label} input] part1: ${computePart1(particles1)}`);
+            console.log(`[${label} input] part2: ${computePart2(particles2)}`);
         }
     });
 };
 
-const test = () => run("Day20/test.txt", "test");
+const test1 = () => run("Day20/test1.txt", "test");
+const test2 = () => run("Day20/test2.txt", "test");
 const real = () => run("Day20/input.txt", "real");
 
-test();
+test1();
+test2();
 real();
