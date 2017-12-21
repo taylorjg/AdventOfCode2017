@@ -44,19 +44,15 @@ const combineGrids = grids => {
     if (grids.length === 1) return grids[0];
     const n = grids[0][0].length;
     const numChunks = Math.sqrt(grids.length);
-    console.log(`[dumpGrids] n: ${n}; numChunks: ${numChunks}`);
     const ns = Array.from(Array(n).keys());
     const chunkIndices = Array.from(Array(numChunks).keys());
     const chunks = chunkIndices.map(i => grids.slice(i * numChunks, (i + 1) * numChunks));
-
-    const v1 = chunks.map(chunk => {
-        // TODO: remove return
-        return ns.map(i => {
+    const v1 = chunks.map(chunk =>
+        ns.map(i => {
             const rows = chunkIndices.map(j => chunk[j][i]);
             const line = rows.join("");
             return line;
-        });
-    });
+        }));
     const v2 = flatten(v1);
     return v2;
 };
@@ -99,12 +95,8 @@ const gridsEqual = (g1, g2) => {
 };
 
 const matchRule = (rules, variations) => {
-    // TODO: for in / for of ?
-    for (let i = 0; i < rules.length; i++) {
-        const rule = rules[i];
-        // TODO: for in / for of ?
-        for (let j = 0; j < variations.length; j++) {
-            const variation = variations[j];
+    for (rule of rules) {
+        for (variation of variations) {
             if (gridsEqual(rule[0], variation)) return rule;
         }
     }
@@ -123,16 +115,11 @@ const enhanceGrid = rules => grid => {
         flipH(rotate270(grid)),
     ];
     const rule = matchRule(rules, variations);
-    // TODO: rule.input, rule.output 
     return rule[1];
 };
 
-const transformGrid = rules => grid => {
-    const v1 = splitGrid(grid);
-    const v2 = v1.map(enhanceGrid(rules));
-    const v3 = combineGrids(v2);
-    return v3;
-};
+const transformGrid = rules => grid =>
+    combineGrids(splitGrid(grid).map(enhanceGrid(rules)));
 
 const INITIAL_GRID = [
     ".#.",
@@ -140,7 +127,7 @@ const INITIAL_GRID = [
     "###"
 ];
 
-const computePart1 = (rules, numIterations) => {
+const compute = (rules, numIterations) => {
     const range = Array.from(Array(numIterations).keys());
     const finalGrid = range.reduce(transformGrid(rules), INITIAL_GRID);
     return countOnPixels(finalGrid);
@@ -154,13 +141,13 @@ const run = (fileName, label, numIterations) => {
         else {
             const input = buffer.toString();
             const rules = parseInput(input);
-            console.log(`[${label} input] part1: ${computePart1(rules, numIterations)}`);
+            console.log(`[${label} input (${numIterations} iterations)] ${compute(rules, numIterations)}`);
         }
     });
 };
 
-const test = n => run("Day21/test.txt", "test", n);
-const real = n => run("Day21/input.txt", "real", n);
+const test = numIterations => run("Day21/test.txt", "test", numIterations);
+const real = numIterations => run("Day21/input.txt", "real", numIterations);
 
 const demoRotationsAndFlips = () => {
 
