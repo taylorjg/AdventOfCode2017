@@ -130,8 +130,8 @@ const run = (fileName, label) => {
     });
 };
 
-const test1 = () => run("Day20/test1.txt", "test");
-const test2 = () => run("Day20/test2.txt", "test");
+const test1 = () => run("Day20/test1.txt", "test1");
+const test2 = () => run("Day20/test2.txt", "test2");
 const real = () => run("Day20/input.txt", "real");
 
 test1();
