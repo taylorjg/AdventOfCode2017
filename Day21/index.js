@@ -4,7 +4,10 @@ const parseRows = bit => bit.split("/");
 
 const parseRule = line => {
     const bits = line.split("=>").map(bit => bit.trim());
-    return [parseRows(bits[0]), parseRows(bits[1])];
+    return {
+        in: parseRows(bits[0]),
+        out: parseRows(bits[1])
+    };
 };
 
 const parseInput = input =>
@@ -97,7 +100,7 @@ const gridsEqual = (g1, g2) => {
 const matchRule = (rules, variations) => {
     for (rule of rules) {
         for (variation of variations) {
-            if (gridsEqual(rule[0], variation)) return rule;
+            if (gridsEqual(rule.in, variation)) return rule;
         }
     }
 };
@@ -115,7 +118,7 @@ const enhanceGrid = rules => grid => {
         flipH(rotate270(grid)),
     ];
     const rule = matchRule(rules, variations);
-    return rule[1];
+    return rule.out;
 };
 
 const transformGrid = rules => grid =>
