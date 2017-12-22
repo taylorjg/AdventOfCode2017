@@ -39,8 +39,11 @@ const calculateNewPosition = ({ x, y }, dir) => {
 };
 
 const removeFromMap = (map, pos) => {
-    const newMap = map.filter(c => !equalCoords(pos)(c));
-    return newMap;
+    const index = map.findIndex(equalCoords(pos));
+    if (index >= 0) {
+        map.splice(index, 1);
+    }
+    return map;
 };
 
 const addToMap = (map, pos) => {
