@@ -1,0 +1,6 @@
+set b 65
+set c b
+jnz a 2
+jnz 1 5
+mul b 100
+sub b -100000
