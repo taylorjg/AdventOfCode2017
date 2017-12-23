@@ -76,12 +76,12 @@ processInstruction1 (regs, ip, numMuls) instruction =
           v1 = Map.findWithDefault 0 r regs
           v2 = regOrVal v
 
-runProgram :: [Instruction] -> Int
-runProgram instructions = numMuls
+type State = (Map Char Int, Int, Int)
+
+runCommon :: [Instruction] -> State -> State
+runCommon instructions = loop
   where
-    initialState = (Map.empty, 0, 0)
-    finalState @ (_, _, numMuls) = loop initialState
-    loop state @ (regs, ip, numMuls) =
+    loop state @ (_, ip, _) =
       case maybeState' of
         Just state' -> loop state'
         Nothing     -> state
@@ -89,3 +89,15 @@ runProgram instructions = numMuls
         maybeState' = fmap (processInstruction1 state) maybeInstruction
         maybeInstruction = Map.lookup ip program
         program = Map.fromList $ zip [0..] instructions
+
+runProgramWithDebugOn :: [Instruction] -> Int
+runProgramWithDebugOn instructions = numMuls
+  where
+    initialState = (Map.empty, 0, 0)
+    (_, _, numMuls) = runCommon instructions initialState
+
+runProgramWithDebugOff :: [Instruction] -> Maybe Int
+runProgramWithDebugOff instructions = Map.lookup 'h' regs
+  where
+    initialState = (Map.singleton 'a' 1, 0, 0)
+    (regs, _, _) = runCommon instructions initialState

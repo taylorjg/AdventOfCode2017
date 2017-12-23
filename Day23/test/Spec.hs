@@ -20,3 +20,7 @@ main = hspec $
       it "can parse input" $ do
         input <- readFile "Day23/test/input.txt"
         parseInput input `shouldBe` instructions
+
+      it "runProgramWithDebugOn" $ do
+        input <- readFile "Day23/src/input.txt"
+        runProgramWithDebugOn (parseInput input) `shouldBe` 3969
