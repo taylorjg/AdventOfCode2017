@@ -17,9 +17,6 @@ const parseInput = input => {
     return v3;
 }
 
-const equalCoords = c1 => c2 =>
-    c1.x === c2.x && c1.y === c2.y;
-
 const calculateNewPosition = ({ x, y }, dir) => {
     switch (dir) {
         case "U": return { x, y: y + 1 };
@@ -29,19 +26,9 @@ const calculateNewPosition = ({ x, y }, dir) => {
     }
 };
 
-const removeFromMap = (map, pos) => {
-    const index = map.findIndex(equalCoords(pos));
-    if (index >= 0) {
-        map.splice(index, 1);
-    }
-    return map;
-};
+const mkKey = pos => `${pos.x},${pos.y}`;
 
-const addToMap = (map, pos) => {
-    map.push(pos);
-};
-
-const computePart1 = (map, numIterations) => {
+const computePart1 = (coords, numIterations) => {
 
     const calculateNewDirection = (oldDir, infected) => {
         switch (oldDir) {
@@ -53,16 +40,18 @@ const computePart1 = (map, numIterations) => {
     };
 
     const reducer = state => {
-        const oldInfected = !!state.map.find(equalCoords(state.pos));
+        // const oldInfected = !!state.map.find(equalCoords(state.pos));
+        const key = mkKey(state.pos);
+        const oldInfected = state.map[key] || false;
         const newInfected = !oldInfected;
         const newDir = calculateNewDirection(state.dir, oldInfected);
         const newPos = calculateNewPosition(state.pos, newDir);
 
         if (newInfected) {
-            addToMap(state.map, state.pos);
+            state.map[key] = true;
         }
         else {
-            removeFromMap(state.map, state.pos);
+            delete state.map[key];
         }
 
         return {
@@ -74,7 +63,7 @@ const computePart1 = (map, numIterations) => {
     };
 
     const initialState = {
-        map,
+        map: coords.reduce((m, p) => (m[mkKey(p)] = true, m), {}),
         pos: { x: 0, y: 0 },
         dir: "U",
         numInfectingBursts: 0
@@ -84,7 +73,7 @@ const computePart1 = (map, numIterations) => {
     return finalState.numInfectingBursts;
 };
 
-const computePart2 = (map, numIterations) => {
+const computePart2 = (coords, numIterations) => {
 
     const CLEAN = 0;
     const INFECTED = 1;
@@ -130,30 +119,17 @@ const computePart2 = (map, numIterations) => {
     };
 
     const reducer = (state, iteration) => {
-        if (iteration % 10000 === 0) {
-            console.log(`iteration: ${iteration}`);
-        }
-        const elem = state.map.find(equalCoords(state.pos));;
-        const oldState = elem ? elem.state : CLEAN;
+        const key = mkKey(state.pos);
+        const oldState = state.map[key] || CLEAN;
         const newState = calculateNewState(oldState);
         const newDir = calculateNewDirection(state.dir, oldState);
         const newPos = calculateNewPosition(state.pos, newDir);
-        
+
         if (newState === CLEAN) {
-            removeFromMap(state.map, elem);
+            delete state.map[key];
         }
         else {
-            if (elem) {
-                elem.state = newState;
-            }
-            else {
-                const newElem = {
-                    x: state.pos.x,
-                    y: state.pos.y,
-                    state: newState
-                };
-                addToMap(state.map, newElem);
-            }
+            state.map[key] = newState;
         }
 
         return {
@@ -165,7 +141,7 @@ const computePart2 = (map, numIterations) => {
     };
 
     const initialState = {
-        map: map.map(({ x, y }) => ({ x, y, state: INFECTED })),
+        map: coords.reduce((m, p) => (m[mkKey(p)] = INFECTED, m), {}),
         pos: { x: 0, y: 0 },
         dir: "U",
         numInfectingBursts: 0
@@ -175,30 +151,36 @@ const computePart2 = (map, numIterations) => {
     return finalState.numInfectingBursts;
 };
 
-const run = (fileName, label, numIterations) => {
+const run = (fileName, label, part, numIterations) => {
     fs.readFile(fileName, (err, buffer) => {
         if (err) {
             console.log(`err: ${err}`);
         }
         else {
             const input = buffer.toString();
-            // const map1 = parseInput(input);
-            // const answer1 = computePart1(map1, numIterations);
-            // console.log(`[${label} input (${numIterations} iterations)] answer1: ${answer1}`);
-            const map2 = parseInput(input);
-            const answer2 = computePart2(map2, numIterations);
-            console.log(`[${label} input (${numIterations} iterations)] answer2: ${answer2}`);
+            const coords = parseInput(input);
+            switch (part) {
+                case 1:
+                    const answer1 = computePart1(coords, numIterations);
+                    console.log(`[${label} input (${numIterations} iterations)] part1: ${answer1}`);
+                    break;
+                case 2:
+                    const answer2 = computePart2(coords, numIterations);
+                    console.log(`[${label} input (${numIterations} iterations)] part2: ${answer2}`);
+                    break;
+            }
         }
     });
 };
 
-const test = numIterations => run("Day22/test.txt", "test", numIterations);
-const real = numIterations => run("Day22/input.txt", "real", numIterations);
+const test = (part, numIterations) => run("Day22/test.txt", "test", part, numIterations);
+const real = (part, numIterations) => run("Day22/input.txt", "real", part, numIterations);
 
-// test(7);
-// test(70);
-// test(10000);
-// real(10000);
-// test(100);
-// test(10000000);
-real(10000000);
+test(1, 7);
+test(1, 70);
+test(1, 10000);
+real(1, 10000);
+
+test(2, 100);
+test(2, 10000000);
+real(2, 10000000);
