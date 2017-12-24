@@ -24,29 +24,19 @@ const whichEndUsed = (endUsed, c1, c2) =>
         ? (c1.b === c2.a ? 'a' : 'b')
         : (c1.a === c2.a ? 'a' : 'b');
 
-const equalComponents = (c1, c2) =>
-    c1.a === c2.a && c1.b === c2.b;
-
 const bridgeStrength = components =>
-    components.reduce((sum, component) => sum + component.a + component.b, 0);
+    components.reduce((sum, c) => sum + c.a + c.b, 0);
 
-const findBestBridge = bridges =>
-    bridges.reduce((bestBridge, bridge) => {
-        const strength = bridgeStrength(bridge);
-        if (strength > bestBridge[1]) {
-            return [bridge, strength];
-        }
-        return bestBridge;
-    }, [null, 0]);
+const findMax = xs =>
+    xs.reduce((a, b) => Math.max(a, b));
 
-const computePart1 = components => {
+const validBridges = components => {
 
-    const startingPoints = components.filter(component => component.a === 0);
-    const nodes = startingPoints.map(sp => ({
-        bridge: [sp],
+    const nodes = [{
+        bridge: [{ a: 0, b: 0 }],
         endUsed: 'a',
-        rest: components.filter(c => !equalComponents(c, sp))
-    }));
+        rest: components
+    }];
 
     for (; ;) {
         const newNodes = [];
@@ -62,7 +52,7 @@ const computePart1 = components => {
                     newNodes.push({
                         bridge: clonedBridge,
                         endUsed: whichEndUsed(node.endUsed, last, match),
-                        rest: node.rest.filter(c => !equalComponents(c, match))
+                        rest: node.rest.filter(c => c !== match)
                     })
                 });
             }
@@ -75,9 +65,16 @@ const computePart1 = components => {
         nodes.push(...newNodes);
     }
 
-    const bridges = nodes.map(node => node.bridge);
-    const bestBridge = findBestBridge(bridges);
-    return bestBridge[1];
+    return nodes.map(node => node.bridge);
+};
+
+const computePart1 = bridges =>
+    findMax(bridges.map(bridgeStrength));
+
+const computePart2 = bridges => {
+    const maxLength = findMax(bridges.map(bridge => bridge.length));
+    const longestBridges = bridges.filter(bridge => bridge.length === maxLength);
+    return findMax(longestBridges.map(bridgeStrength));
 };
 
 const run = (fileName, label) => {
@@ -88,8 +85,9 @@ const run = (fileName, label) => {
         else {
             const input = buffer.toString();
             const components = parseInput(input);
-            console.log(`[${label} input] part1: ${computePart1(components)}`);
-            // console.log(`[${label} input] part2: ${computePart2(particles2)}`);
+            const bridges = validBridges(components);
+            console.log(`[${label} input] part1: ${computePart1(bridges)}`);
+            console.log(`[${label} input] part2: ${computePart2(bridges)}`);
         }
     });
 };
