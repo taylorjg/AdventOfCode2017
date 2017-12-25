@@ -73,7 +73,6 @@ const run = (fileName, label) => {
             const input = buffer.toString();
             const blueprint = parseBlueprint(input);
             console.log(`[${label} input] part1: ${computePart1(blueprint)}`);
-            // console.log(`[${label} input] part2: ${computePart2(bridges)}`);
         }
     });
 };
