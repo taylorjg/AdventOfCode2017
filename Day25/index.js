@@ -39,13 +39,29 @@ const parseBlueprint = input => {
 
     return {
         numSteps,
-        states
+        states: new Map(states.map(state => [state.name, state]))
     };
 };
 
+const runBlueprint = blueprint => {
+    const tape = new Map();
+    let cursor = 0;
+    let currState = "A";
+    for (let step = 0; step < blueprint.numSteps; step++) {
+        const state = blueprint.states.get(currState);
+        const currValue = tape.get(cursor) || 0;
+        const rule = (currValue === 1) ? state.rule1 : state.rule0;
+        tape.set(cursor, rule.value);
+        cursor += rule.direction === "right" ? 1 : -1;
+        currState = rule.nextState;
+    }
+    return tape;
+};
+
 const computePart1 = blueprint => {
-    console.log(JSON.stringify(blueprint));
-    return 0;
+    const tape = runBlueprint(blueprint);
+    const numOnes = Array.from(tape.values()).filter(value => value === 1).length;
+    return numOnes;
 };
 
 const run = (fileName, label) => {
