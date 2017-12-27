@@ -77,8 +77,8 @@ const run = (fileName, label) => {
     });
 };
 
-const test = () => run("Day25/test.txt", "test");
-const real = () => run("Day25/input.txt", "real");
+const test = () => run("Day25/test/input.txt", "test");
+const real = () => run("Day25/src/input.txt", "real");
 
 test();
 real();
