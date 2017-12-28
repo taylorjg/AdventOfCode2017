@@ -27,10 +27,10 @@ validBridges components = go startingBridges []
   where
     startingBridges = map (:[]) startingComponents
     startingComponents = filter (canConnect 0) components
-    go bridges acc =
-      case nextBridges of
-        [] -> acc ++ bridges
-        _  -> go nextBridges (acc ++ bridges)
+    go bridges accumulatedBridges =
+      case bridges of
+        [] -> accumulatedBridges
+        _  -> go nextBridges (accumulatedBridges ++ bridges)
       where
         nextBridges = concatMap advance bridges
         advance bridge = map (:bridge) matches
