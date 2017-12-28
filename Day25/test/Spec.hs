@@ -1,5 +1,3 @@
-import           Data.Map   (Map)
-import qualified Data.Map   as Map
 import           Day25
 import           Test.Hspec
 
@@ -10,9 +8,9 @@ main = hspec $
 
     describe "Part 1" $ do
 
-      let blueprint = Blueprint 6 $ Map.fromList [
-              ("A", State "A" (Rule 1 R "B") (Rule 0 L "B")),
-              ("B", State "B" (Rule 1 L "A") (Rule 1 R "A"))
+      let blueprint = Blueprint 6 [
+              State "A" (Rule 1 R "B") (Rule 0 L "B"),
+              State "B" (Rule 1 L "A") (Rule 1 R "A")
             ]
 
       it "can parse input" $ do

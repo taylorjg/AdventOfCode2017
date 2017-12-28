@@ -24,7 +24,7 @@ data State = State {
 
 data Blueprint = Blueprint {
   numSteps :: Int,
-  states   :: Map String State
+  states   :: [State]
   } deriving (Show, Eq, Ord)
 
 getDirection :: String -> Direction
@@ -62,20 +62,21 @@ parseBlueprint input = Blueprint numSteps states
     [matches] = (lines !! 1) =~ pat :: [[String]]
     numSteps = read $ matches !! 1
     pat = "Perform a diagnostic checksum after (\\d+) steps."
-    pairs = (\state -> (name state, state)) `fmap` parseState `fmap` chunks
-    states = Map.fromList pairs
+    states = parseState `fmap` chunks
     chunks = filter ((== 10) . length) $ chunksOf 10 $ drop 2 lines
 
 runBlueprint :: Blueprint -> Int
 runBlueprint blueprint = numOnes
   where
+    pairs = (\state -> (name state, state)) `fmap` states blueprint
+    statesMap = Map.fromList pairs
     initialState = (IntMap.empty, 0, "A")
     finalState = last $ take (numSteps blueprint) (iterate f initialState)
     (finalTape, _, _) =  finalState
     numOnes = IntMap.size $ IntMap.filter (== 1) finalTape
     f (tape, cursor, currState) = (tape', cursor', currState')
       where
-        state = states blueprint Map.! currState
+        state = statesMap Map.! currState
         currValue = IntMap.findWithDefault 0 cursor tape
         rule = case currValue of
           0 -> rule0 state
