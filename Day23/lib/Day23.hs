@@ -5,6 +5,7 @@ import           Data.List.Split (splitOn)
 import           Data.Map        (Map)
 import qualified Data.Map        as Map
 import           Data.Maybe      (fromMaybe)
+import           Debug.Trace
 
 data Value =
   Reg Char |
@@ -17,6 +18,9 @@ data Instruction =
   Mul Char Value |
   Jnz Value Value
   deriving (Eq, Show)
+
+type Regs = Map Char Int
+type State = (Regs, Int, Int)
 
 parseRegAndValue :: (Char -> Value -> Instruction) -> [String] -> Instruction
 parseRegAndValue mkInstruction bits = mkInstruction reg val
@@ -47,11 +51,9 @@ parseLine line = case head bits of
 parseInput :: String -> [Instruction]
 parseInput input = map parseLine $ filter (not . null) $ lines input
 
-type Regs = Map Char Int
-type State1 = (Regs, Int, Int)
-
-processInstruction1 :: State1 -> Instruction -> State1
-processInstruction1 (regs, ip, numMuls) instruction =
+processInstruction :: State -> Instruction -> State
+processInstruction state @ (regs, ip, numMuls) instruction =
+  -- trace ("state: " ++ show state) $
   case instruction of
 
     Set r v -> fn2 r v (flip const) 0
@@ -76,8 +78,6 @@ processInstruction1 (regs, ip, numMuls) instruction =
           v1 = Map.findWithDefault 0 r regs
           v2 = regOrVal v
 
-type State = (Map Char Int, Int, Int)
-
 runCommon :: [Instruction] -> State -> State
 runCommon instructions = loop
   where
@@ -86,7 +86,7 @@ runCommon instructions = loop
         Just state' -> loop state'
         Nothing     -> state
       where
-        maybeState' = fmap (processInstruction1 state) maybeInstruction
+        maybeState' = fmap (processInstruction state) maybeInstruction
         maybeInstruction = Map.lookup ip program
         program = Map.fromList $ zip [0..] instructions
 

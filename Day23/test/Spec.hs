@@ -23,4 +23,4 @@ main = hspec $
 
       it "runProgramWithDebugOn" $ do
         input <- readFile "Day23/src/input.txt"
-        runProgramWithDebugOn (parseInput input) `shouldBe` 3969
+        runProgramWithDebugOff (parseInput input) `shouldBe` Nothing -- 3969

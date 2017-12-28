@@ -1,0 +1,32 @@
+set b 65        ; b = 65 = 'A'
+set c b         ; c = b  = 'A'
+jnz a 2         ; 5     jump to 5 if release
+jnz 1 5         ; 9     always jump to 9 if debug
+mul b 100       ; release only b *= 100 = 6500
+sub b -100000   ; release only b += 100000 = 106500
+set c b         ; release only c = b = 106500
+sub c -17000    ; release only c +=     17000 = 123500
+set f 1         ; both f = 1                    ; outer loop ? jump back here from 32 ; f is a flag ?
+set d 2         ; both d = 2
+set e 2         ; both e = 2                    ; inner loop ? jump back here from 24
+set g d         ; both g = d                    ; inner loop ? jump back here from 20
+mul g e         ; both g *= e
+sub g b         ; both g -= b
+jnz g 2         ; jump to 17 if g /= 0
+set f 0         ; clear f       if g == 0 then clear f
+sub e -1        ; inc e
+set g e         ; g = e
+sub g b         ; g -= b
+jnz g -8        ; jump to 12 if g /= 0          ; if g /= 0 then inner loop again without resetting e to 2
+sub d -1        ; inc d
+set g d         ; g = d
+sub g b         ; g -= b
+jnz g -13       ; 11                            ; if g /= 0 then inner loop again with e reset to 2
+jnz f 2         ; 
+sub h -1        ; inc h         if f == 0 then inc h
+set g b         ; g = b
+sub g c         ; g -= c
+jnz g 2         ; 
+jnz 1 3         ; 33            if g == 0 return
+sub b -17       ; b += 17       else b += 17, outer loop again
+jnz 1 -23       ; 9

@@ -2,7 +2,6 @@ module Day24 where
 
 import           Data.List       ((\\))
 import           Data.List.Split (splitOn)
-import           Debug.Trace
 
 data Component = Component { a :: Int, b :: Int } deriving (Show, Eq, Ord)
 
@@ -24,14 +23,14 @@ bridgeStrength :: Bridge -> Int
 bridgeStrength = foldl (\acc c -> acc + a c + b c) 0
 
 validBridges :: [Component] -> [Bridge]
-validBridges components = go startingBridges
+validBridges components = go startingBridges []
   where
     startingBridges = map (:[]) startingComponents
     startingComponents = filter (canConnect 0) components
-    go bridges =
+    go bridges acc =
       case nextBridges of
-        [] -> bridges
-        _  -> go nextBridges
+        [] -> acc ++ bridges
+        _  -> go nextBridges (acc ++ bridges)
       where
         nextBridges = concatMap advance bridges
         advance bridge = map (:bridge) matches
@@ -46,19 +45,14 @@ validBridges components = go startingBridges
         Component a b:Component c d:_ | b == c || b == d -> a
         [Component a b]               | a == 0               -> b
         [Component a b]               | b == 0               -> a
-        []                            -> 0
 
 computePart1 :: [Component] -> Int
-computePart1 components =
-  trace ("bridges: " ++ show bridges) $
-  maximum $ map bridgeStrength bridges
+computePart1 components = maximum $ map bridgeStrength bridges
   where
     bridges = validBridges components
 
 computePart2 :: [Component] -> Int
-computePart2 components =
-  trace ("bridges: " ++ show bridges) $
-  maximum $ map bridgeStrength longestBridges
+computePart2 components = maximum $ map bridgeStrength longestBridges
   where
     bridges = validBridges components
     maxLength = maximum $ map length bridges
