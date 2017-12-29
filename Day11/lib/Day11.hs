@@ -43,23 +43,14 @@ findFinish path = finish
 shortestRoute :: String -> Int
 shortestRoute path =  shortestDistance $ findFinish path
 
--- const seed = {
---     currentLocation: start,
---     furthestDistance: 0
--- };
--- const finalAcc = steps.reduce(
---     (acc, step) => {
---         const newCurrentLocation = move(acc.currentLocation, step);
---         const distance = shortestRoute(newCurrentLocation);
---         const newFurthestDistance = Math.max(acc.furthestDistance, distance);
---         return {
---             currentLocation: newCurrentLocation,
---             furthestDistance: newFurthestDistance
---         };
---     },
---     seed);
--- console.log(`furthest distance is ${finalAcc.furthestDistance}`);
 furthestDistance :: String -> Int
-furthestDistance path = 0
+furthestDistance path = snd finalAcc
   where
     steps = parsePath path
+    start = Coords 0 0
+    seed = (start, 0)
+    finalAcc = foldl op seed steps
+    op (location, distance) step = (location', distance')
+      where
+        location' = makeMove location step
+        distance' = max distance $ shortestDistance location'
