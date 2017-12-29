@@ -9,13 +9,13 @@ main = hspec $
     describe "Part 1" $ do
 
       it "ne,ne,ne" $
-        3 `shouldBe` 3
+        shortestRoute "ne,ne,ne" `shouldBe` 3
 
       it "ne,ne,sw,sw" $
-        0 `shouldBe` 0
+        shortestRoute "ne,ne,sw,sw" `shouldBe` 0
 
       it "ne,ne,s,s" $
-        2 `shouldBe` 2
+        shortestRoute "ne,ne,s,s" `shouldBe` 2
 
       it "se,sw,se,sw,sw" $
-       3 `shouldBe` 3
+        shortestRoute "se,sw,se,sw,sw" `shouldBe` 3
