@@ -113,35 +113,23 @@ const computePart2a = (n, moves, steps) => {
     const d = steps % c;
     return computePart2(n, moves, d);
 };
-    
-const test = () => {
-    fs.readFile("Day16/test/input.txt", (err, buffer) => {
-        if (err) {
-            console.log(`err: ${err}`);
-        }
-        else {
-            const input = buffer.toString();
-            const moves = parseInput(input);
-            console.log(`moves: ${JSON.stringify(moves)}`);
-            console.log(`[test input] part1: ${computePart1(5, moves)}`);
-            console.log(`[test input] part2: ${computePart2a(5, moves, 2)}`);
-        }
-    });
-};
 
-const real = () => {
-    fs.readFile("Day16/src/input.txt", (err, buffer) => {
+const run = (fileName, label, n, steps) => {
+    fs.readFile(fileName, (err, buffer) => {
         if (err) {
             console.log(`err: ${err}`);
         }
         else {
             const input = buffer.toString();
             const moves = parseInput(input);
-            console.log(`[real input] part1: ${computePart1(16, moves)}`);
-            console.log(`[real input] part2: ${computePart2a(16, moves, 1000000000)}`);
+            console.log(`[${label} input] part1: ${computePart1(n, moves)}`);
+            console.log(`[${label} input] part2: ${computePart2a(n, moves, steps)}`);
         }
     });
 };
+    
+const test = () => run("Day16/test/input.txt", "test", 5, 2);
+const real = () => run("Day16/src/input.txt", "real", 16, 1000000000);
 
 test();
 real();

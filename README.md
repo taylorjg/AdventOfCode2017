@@ -28,3 +28,9 @@ On some days, I have both JavaScript and Haskell implementations. In a few cases
 * Day16, Day17, Day25
 * [Haskell Performance Resource](https://wiki.haskell.org/Performance)
 * [Haskell High Performance Programming](https://www.packtpub.com/application-development/haskell-high-performance-programming)
+* [Tutorial: Profiling Cabal projects](https://nikita-volkov.github.io/profiling-cabal-projects/)
+
+```
+cabal configure --enable-profiling --enable-tests --enable-benchmarks
+```
+
