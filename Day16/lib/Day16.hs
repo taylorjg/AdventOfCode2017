@@ -4,7 +4,7 @@ module Day16 (
   dance,
   wholeDance) where
 
-import           Data.List       (elemIndex, partition)
+import           Data.List       (partition)
 import           Data.List.Split (splitOn)
 import           Data.Maybe      (fromMaybe)
 import           Data.Semigroup  ((<>))
@@ -65,10 +65,12 @@ makeExchangeMove s idxa idxb = s'
           | otherwise = ch
 
 makePartnerMove :: Text -> Char -> Char -> Text
-makePartnerMove s a b = makeExchangeMove s idxa idxb
+makePartnerMove s cha chb = T.map f s
   where
-    idxa = fromMaybe 0 $ T.findIndex (== a) s
-    idxb = fromMaybe 0 $ T.findIndex (== b) s
+    f ch
+      | ch == cha = chb
+      | ch == chb = cha
+      | otherwise = ch
 
 makeMove :: Text -> DanceMove -> Text
 makeMove s m = case m of
