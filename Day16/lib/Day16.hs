@@ -7,6 +7,9 @@ module Day16 (
 import           Data.List       (elemIndex, partition)
 import           Data.List.Split (splitOn)
 import           Data.Maybe      (fromMaybe)
+import           Data.Semigroup  ((<>))
+import           Data.Text       (Text)
+import qualified Data.Text       as T
 
 data DanceMove =
   Spin Int |
@@ -40,49 +43,51 @@ parseDanceMove ('p':rest) = parsePartner rest
 parseDanceMoves :: String -> [DanceMove]
 parseDanceMoves input = map parseDanceMove $ splitOn "," input
 
-makeSpinMove :: String -> Int -> String
+makeSpinMove :: Text -> Int -> Text
 makeSpinMove s x = s'
   where
-    len = length s
-    v1 = drop (len - x) s
-    v2 = take (len - x) s
-    s' = v1 ++ v2
+    len = T.length s
+    v1 = T.drop (len - x) s
+    v2 = T.take (len - x) s
+    s' = v1 <> v2
 
-makeExchangeMove :: String -> Int -> Int -> String
-makeExchangeMove s a b = s'
+makeExchangeMove :: Text -> Int -> Int -> Text
+makeExchangeMove s idxa idxb = s'
   where
-    cha = s !! a
-    chb = s !! b
-    z = zip s [0..]
-    s' = map (\(ch, idx) -> case idx of
-      _ | idx == a -> chb
-      _ | idx == b -> cha
-      _ -> ch) z
+    cha = T.index s idxa
+    chb = T.index s idxb
+    s' = snd $ T.mapAccumL op 0 s
+    op idx ch = (succ idx, ch')
+      where
+        ch'
+          | idx == idxa = chb
+          | idx == idxb = cha
+          | otherwise = ch
 
-makePartnerMove :: String -> Char -> Char -> String
+makePartnerMove :: Text -> Char -> Char -> Text
 makePartnerMove s a b = makeExchangeMove s idxa idxb
   where
-    idxa = fromMaybe 0 $ elemIndex a s
-    idxb = fromMaybe 0 $ elemIndex b s
+    idxa = fromMaybe 0 $ T.findIndex (== a) s
+    idxb = fromMaybe 0 $ T.findIndex (== b) s
 
-makeMove :: String -> DanceMove -> String
+makeMove :: Text -> DanceMove -> Text
 makeMove s m = case m of
   Spin x       -> makeSpinMove s x
   Exchange a b -> makeExchangeMove s a b
   Partner a b  -> makePartnerMove s a b
 
-makeMoves :: String -> [DanceMove] -> String
+makeMoves :: Text -> [DanceMove] -> Text
 makeMoves = foldl makeMove
 
 dance :: Int -> [DanceMove] -> String
 dance n moves = wholeDance n moves 1
 
 wholeDance :: Int -> [DanceMove] -> Int -> String
-wholeDance n moves steps = foldl op initial [1..d]
+wholeDance n moves steps = T.unpack $ foldl op initial [1..d]
   where
     op s _ = makeMoves s moves
     (ps, nps) = decompose moves
-    initial = take n ['a'..]
+    initial = T.pack $ take n ['a'..]
     a = findCycle initial ps
     b = findCycle initial nps
     c = lcm a b
@@ -94,7 +99,7 @@ decompose = partition isPartnerMove
     isPartnerMove (Partner _ _) = True
     isPartnerMove _             = False
 
-findCycle :: String -> [DanceMove] -> Int
+findCycle :: Text -> [DanceMove] -> Int
 findCycle s moves = length ss'
   where
     ss' = takeWhile (/= s) ss
