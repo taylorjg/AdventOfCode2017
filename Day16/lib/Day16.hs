@@ -4,12 +4,13 @@ module Day16 (
   dance,
   wholeDance) where
 
-import           Data.List       (partition)
-import           Data.List.Split (splitOn)
-import           Data.Maybe      (fromMaybe)
-import           Data.Semigroup  ((<>))
-import           Data.Text       (Text)
-import qualified Data.Text       as T
+import           Control.Monad
+import           Control.Monad.Primitive
+import           Control.Monad.ST
+import           Data.List                   (partition)
+import           Data.List.Split             (splitOn)
+import qualified Data.Vector.Unboxed         as V
+import qualified Data.Vector.Unboxed.Mutable as MV
 
 data DanceMove =
   Spin Int |
@@ -43,55 +44,57 @@ parseDanceMove ('p':rest) = parsePartner rest
 parseDanceMoves :: String -> [DanceMove]
 parseDanceMoves input = map parseDanceMove $ splitOn "," input
 
-makeSpinMove :: Text -> Int -> Text
-makeSpinMove s x = s'
+makeSpinMoveST :: PrimMonad m => MV.MVector (PrimState m) Char -> Int -> m ()
+makeSpinMoveST mv x = do
+  MV.unsafeMove dst1 src1
+  MV.unsafeMove dst2 src2
   where
-    len = T.length s
-    v1 = T.drop (len - x) s
-    v2 = T.take (len - x) s
-    s' = v1 <> v2
+    n = MV.length mv `div` 2
+    idx = n - x
+    src1 = MV.unsafeSlice 0 n mv
+    dst1 = MV.unsafeSlice n n mv
+    src2 = MV.unsafeSlice idx n mv
+    dst2 = MV.unsafeSlice 0 n mv
 
-makeExchangeMove :: Text -> Int -> Int -> Text
-makeExchangeMove s idxa idxb = s'
+makeExchangeMoveST :: PrimMonad m => MV.MVector (PrimState m) Char -> Int -> Int -> m ()
+makeExchangeMoveST = MV.unsafeSwap
+
+-- TODO: findCharsST
+findCharST :: PrimMonad m => MV.MVector (PrimState m) Char -> Char -> m Int
+findCharST mv ch1 = go 0
   where
-    cha = T.index s idxa
-    chb = T.index s idxb
-    s' = snd $ T.mapAccumL op 0 s
-    op idx ch = (succ idx, ch')
-      where
-        ch'
-          | idx == idxa = chb
-          | idx == idxb = cha
-          | otherwise = ch
+    go idx = do
+      ch2 <- MV.unsafeRead mv idx
+      if ch1 == ch2
+        then return idx
+        else go (succ idx)
 
-makePartnerMove :: Text -> Char -> Char -> Text
-makePartnerMove s cha chb = T.map f s
-  where
-    f ch
-      | ch == cha = chb
-      | ch == chb = cha
-      | otherwise = ch
+makePartnerMoveST :: PrimMonad m => MV.MVector (PrimState m) Char -> Char -> Char -> m ()
+makePartnerMoveST mv cha chb = do
+  idxa <- findCharST mv cha
+  idxb <- findCharST mv chb
+  MV.unsafeSwap mv idxa idxb
 
-makeMove :: Text -> DanceMove -> Text
-makeMove s m = case m of
-  Spin x       -> makeSpinMove s x
-  Exchange a b -> makeExchangeMove s a b
-  Partner a b  -> makePartnerMove s a b
+makeMoveST :: PrimMonad m => MV.MVector (PrimState m) Char -> DanceMove -> m ()
+makeMoveST mv move = case move of
+  Spin x       -> makeSpinMoveST mv x
+  Exchange a b -> makeExchangeMoveST mv a b
+  Partner a b  -> makePartnerMoveST mv a b
 
-makeMoves :: Text -> [DanceMove] -> Text
-makeMoves = foldl makeMove
+makeMovesST :: PrimMonad m => MV.MVector (PrimState m) Char -> [DanceMove] -> m ()
+makeMovesST mv = mapM_ (makeMoveST mv)
 
 dance :: Int -> [DanceMove] -> String
 dance n moves = wholeDance n moves 1
 
 wholeDance :: Int -> [DanceMove] -> Int -> String
-wholeDance n moves steps = T.unpack $ foldl op initial [1..d]
+wholeDance n moves steps = take n $ V.toList $ runSteps v moves d
   where
-    op s _ = makeMoves s moves
+    s = take n ['a'..]
+    v = V.fromList $ s ++ s
     (ps, nps) = decompose moves
-    initial = T.pack $ take n ['a'..]
-    a = findCycle initial ps
-    b = findCycle initial nps
+    a = findCycle s v ps
+    b = findCycle s v nps
     c = lcm a b
     d = steps `mod` c
 
@@ -101,9 +104,19 @@ decompose = partition isPartnerMove
     isPartnerMove (Partner _ _) = True
     isPartnerMove _             = False
 
-findCycle :: Text -> [DanceMove] -> Int
-findCycle s moves = length ss'
+runSteps :: V.Vector Char -> [DanceMove] -> Int -> V.Vector Char
+runSteps v moves steps = runST $ do
+  mv <- V.thaw v
+  mapM_ (\_ -> makeMovesST mv moves) [1..steps]
+  V.unsafeFreeze mv
+
+findCycle :: String -> V.Vector Char -> [DanceMove] -> Int
+findCycle s v moves = length ss'
   where
-    ss' = takeWhile (/= s) ss
-    ss = drop 1 $ iterate f s
-    f s = makeMoves s moves
+    n = length s
+    ss' = takeWhile ((/= s) . take n . V.toList) vs
+    vs = drop 1 $ iterate f v
+    f v' = runST $ do
+      mv <- V.thaw v'
+      makeMovesST mv moves
+      V.unsafeFreeze mv
