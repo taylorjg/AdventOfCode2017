@@ -59,20 +59,22 @@ makeSpinMoveST mv x = do
 makeExchangeMoveST :: PrimMonad m => MV.MVector (PrimState m) Char -> Int -> Int -> m ()
 makeExchangeMoveST = MV.unsafeSwap
 
--- TODO: findCharsST
-findCharST :: PrimMonad m => MV.MVector (PrimState m) Char -> Char -> m Int
-findCharST mv ch1 = go 0
+findCharsST :: PrimMonad m => MV.MVector (PrimState m) Char -> Char -> Char -> m (Int, Int)
+findCharsST mv cha chb = go 0 Nothing Nothing
   where
-    go idx = do
-      ch2 <- MV.unsafeRead mv idx
-      if ch1 == ch2
-        then return idx
-        else go (succ idx)
+    go idx midxa midxb = do
+      ch <- MV.unsafeRead mv idx
+      let idx' = succ idx
+      case (midxa, midxb) of
+        (_, Just idxb) | ch == cha -> return (idx, idxb)
+        (_, Nothing)   | ch == cha -> go idx' (Just idx) Nothing
+        (Just idxa, _) | ch == chb -> return (idxa, idx)
+        (Nothing, _)   | ch == chb -> go idx' Nothing (Just idx)
+        _              -> go idx' midxa midxb
 
 makePartnerMoveST :: PrimMonad m => MV.MVector (PrimState m) Char -> Char -> Char -> m ()
 makePartnerMoveST mv cha chb = do
-  idxa <- findCharST mv cha
-  idxb <- findCharST mv chb
+  (idxa, idxb) <- findCharsST mv cha chb
   MV.unsafeSwap mv idxa idxb
 
 makeMoveST :: PrimMonad m => MV.MVector (PrimState m) Char -> DanceMove -> m ()
@@ -116,6 +118,7 @@ findCycle s v moves = length ss'
     n = length s
     ss' = takeWhile ((/= s) . take n . V.toList) vs
     vs = drop 1 $ iterate f v
+    -- TODO: try to avoid need for repeated thaw/freeze
     f v' = runST $ do
       mv <- V.thaw v'
       makeMovesST mv moves
